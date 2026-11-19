@@ -1,0 +1,1876 @@
+<!DOCTYPE html>
+<html lang="zh-HK">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>DeepSeek 对话客户端</title>
+<style>
+  :root{
+    --bg:#17181c; --panel:#202228; --panel-2:#272a31; --border:#33363e;
+    --text:#e8eaee; --text-2:#a6abb5; --text-3:#7c828d;
+    --accent:#3da9a0; --accent-2:#2e8b83; --danger:#d96868;
+    --user-bubble:#2f4a47; --assistant-bubble:#272a31;
+    --radius:12px; --shadow:0 4px 18px rgba(0,0,0,.35);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%}
+  body{
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang HK","Noto Sans SC",sans-serif;
+    background:var(--bg);color:var(--text);display:flex;overflow:hidden;
+  }
+  button{font-family:inherit;cursor:pointer;border:none;background:none;color:inherit}
+  input,textarea{font-family:inherit;color:inherit}
+  /* ===== 侧边栏 ===== */
+  aside{
+    width:264px;min-width:220px;background:var(--panel);border-right:1px solid var(--border);
+    display:flex;flex-direction:column;height:100%;
+  }
+  .side-head{display:flex;align-items:center;justify-content:space-between;padding:14px 14px 10px}
+  .side-head .brand{font-weight:600;font-size:15px;letter-spacing:.3px}
+  .icon-btn{
+    width:32px;height:32px;border-radius:8px;display:inline-flex;align-items:center;justify-content:center;
+    color:var(--text-2);transition:.15s;
+  }
+  .icon-btn:hover{background:var(--panel-2);color:var(--text)}
+  .new-btn{
+    margin:0 12px 10px;padding:10px;border-radius:10px;background:var(--accent);color:#0f1d1b;
+    font-weight:600;font-size:14px;display:flex;align-items:center;justify-content:center;gap:8px;
+  }
+  .new-btn:hover{background:var(--accent-2)}
+  .conv-list{flex:1;overflow-y:auto;padding:0 10px 12px}
+  .conv-item{
+    display:flex;align-items:center;gap:8px;padding:10px 10px;border-radius:10px;margin-bottom:4px;
+    cursor:pointer;color:var(--text-2);
+  }
+  .conv-item:hover{background:var(--panel-2);color:var(--text)}
+  .conv-item.active{background:var(--panel-2);color:var(--text)}
+  .conv-item.active .conv-title{color:var(--text)}
+  .conv-title{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:14px}
+  .conv-actions{display:none;gap:2px}
+  .conv-item:hover .conv-actions{display:flex}
+  .conv-actions .icon-btn{width:26px;height:26px}
+  .side-foot{padding:10px 12px;border-top:1px solid var(--border);display:flex;gap:6px}
+  .side-foot .small-btn{
+    flex:1;padding:8px;border-radius:8px;font-size:12.5px;color:var(--text-2);background:var(--panel-2);
+  }
+  .side-foot .small-btn:hover{color:var(--text)}
+  /* ===== 主区 ===== */
+  main{flex:1;display:flex;flex-direction:column;min-width:0;height:100%}
+  .topbar{
+    display:flex;align-items:center;gap:12px;padding:12px 18px;border-bottom:1px solid var(--border);
+  }
+  .topbar .title{font-size:15px;font-weight:600;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  select{
+    background:var(--panel-2);border:1px solid var(--border);border-radius:8px;padding:7px 10px;
+    color:var(--text);font-size:13px;outline:none;
+  }
+  .status{font-size:12px;color:var(--text-3)}
+  .messages{flex:1;overflow-y:auto;padding:22px 20px;display:flex;flex-direction:column;gap:18px}
+  .empty{margin:auto;text-align:center;color:var(--text-3)}
+  .empty h2{font-size:18px;color:var(--text-2);margin-bottom:8px}
+  .empty p{font-size:13.5px}
+  .msg{display:flex;gap:12px;max-width:860px;width:100%;margin:0 auto}
+  .msg .avatar{
+    width:32px;height:32px;border-radius:9px;flex-shrink:0;display:flex;align-items:center;justify-content:center;
+    font-size:13px;font-weight:700;
+  }
+  .msg.user .avatar{background:var(--user-bubble);color:#cfe6e2}
+  .msg.assistant .avatar{background:var(--panel-2);color:var(--accent)}
+  .msg .body{flex:1;min-width:0}
+  .msg .meta{font-size:12px;color:var(--text-3);margin-bottom:5px}
+  .bubble{
+    padding:12px 15px;border-radius:var(--radius);line-height:1.65;font-size:14.5px;
+    word-break:break-word;overflow-wrap:anywhere;
+  }
+  .msg.user .bubble{background:var(--user-bubble);white-space:pre-wrap}
+  .msg.assistant .bubble{background:var(--assistant-bubble);border:1px solid var(--border)}
+  .bubble pre{
+    background:#111317;border:1px solid var(--border);border-radius:8px;padding:12px;overflow-x:auto;
+    margin:8px 0;font-size:13px;line-height:1.55;
+  }
+  .bubble code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+  .bubble p{margin:6px 0}
+  .bubble p:first-child{margin-top:0}
+  .bubble p:last-child{margin-bottom:0}
+  .bubble ul,.bubble ol{padding-left:20px;margin:6px 0}
+  .bubble strong{color:#fff}
+  .cursor::after{content:"▍";color:var(--accent);animation:blink 1s steps(1) infinite}
+  @keyframes blink{50%{opacity:0}}
+  .err{color:var(--danger);font-size:13.5px}
+  .err-hint{
+    margin-top:9px;padding-left:9px;border-left:2px solid var(--border);color:var(--text-3);
+    font-size:12.5px;line-height:1.65;
+  }
+  .muted{color:var(--text-3)}
+  /* ===== 输入区 ===== */
+  .composer{padding:12px 20px 18px;border-top:1px solid var(--border)}
+  .composer-card{
+    max-width:860px;margin:0 auto;background:var(--panel-2);border:1px solid var(--border);
+    border-radius:16px;padding:9px 10px 7px;transition:border-color .15s,box-shadow .15s;
+  }
+  .composer-card:focus-within{border-color:#3f8f89;box-shadow:0 0 0 3px rgba(61,169,160,.07)}
+  .composer-card.net-on{border-color:rgba(61,169,160,.55)}
+  .composer textarea{
+    display:block;width:100%;background:transparent;border:none;resize:none;
+    padding:4px 6px;font-size:14.5px;line-height:1.55;outline:none;max-height:180px;min-height:26px;
+    overflow-y:auto;
+  }
+  .composer-bar{display:flex;align-items:center;gap:8px;padding:5px 1px 0}
+  .flex-spacer{flex:1}
+  .composer-hint{font-size:11.5px;color:var(--text-3);white-space:nowrap}
+  .search-toggle{
+    display:inline-flex;align-items:center;gap:7px;height:30px;padding:0 12px 0 10px;border-radius:999px;
+    background:var(--panel);border:1px solid var(--border);color:var(--text-2);
+    font-size:12.5px;font-weight:600;white-space:nowrap;transition:.15s;
+  }
+  .search-toggle:hover{color:var(--text);border-color:#454951}
+  .search-toggle .globe{width:14px;height:14px;flex-shrink:0}
+  .search-toggle .net-dot{
+    width:6px;height:6px;border-radius:50%;background:var(--text-3);transition:.15s;flex-shrink:0;
+  }
+  .search-toggle.on{
+    background:rgba(61,169,160,.14);border-color:rgba(61,169,160,.6);color:#8ee0d7;
+  }
+  .search-toggle.on .net-dot{
+    background:var(--accent);box-shadow:0 0 0 3px rgba(61,169,160,.18);
+  }
+  .search-mode{
+    height:30px;padding:0 6px;border-radius:8px;background:var(--panel);border:1px solid var(--border);
+    color:var(--text-2);font-size:12px;outline:none;
+  }
+  .search-mode:disabled{opacity:.4;cursor:not-allowed}
+  .search-warn{font-size:11.5px;color:#d9a95f;white-space:nowrap}
+  .send-btn{
+    width:38px;height:38px;border-radius:12px;background:var(--accent);color:#0f1d1b;flex-shrink:0;
+    display:flex;align-items:center;justify-content:center;transition:.15s;
+  }
+  .send-btn:hover{background:var(--accent-2)}
+  .send-btn.stop{background:var(--panel);color:var(--text-2);border:1px solid var(--border)}
+  .send-btn.stop:hover{color:var(--text);border-color:#4a4d56}
+  .send-btn:disabled{background:var(--panel-2);color:var(--text-3);cursor:not-allowed}
+  /* ===== 联网状态 / 搜索轨迹 ===== */
+  .net-badge{
+    display:inline-flex;align-items:center;gap:4px;margin-left:6px;padding:1px 6px;border-radius:999px;
+    background:rgba(61,169,160,.12);border:1px solid rgba(61,169,160,.32);color:#8ee0d7;
+    font-size:10.5px;font-weight:600;vertical-align:1px;
+  }
+  .trace{
+    border:1px solid var(--border);background:rgba(255,255,255,.015);border-radius:11px;
+    margin-bottom:9px;overflow:hidden;
+  }
+  .trace-head{
+    display:flex;align-items:center;gap:8px;padding:8px 11px;cursor:pointer;
+    color:var(--text-2);font-size:12.5px;user-select:none;
+  }
+  .trace-head:focus-visible,.sources-head:focus-visible{outline:2px solid var(--accent);outline-offset:-2px;border-radius:8px}
+  .trace-head:hover{background:rgba(255,255,255,.02)}
+  .trace-head .t-title{font-weight:600;color:var(--text-2);white-space:nowrap}
+  .trace-head .t-meta{
+    flex:1;min-width:0;color:var(--text-3);font-size:12px;overflow:hidden;
+    text-overflow:ellipsis;white-space:nowrap;
+  }
+  .trace-head .chev{color:var(--text-3);transition:.18s;flex-shrink:0}
+  .trace.open .trace-head .chev{transform:rotate(180deg)}
+  .trace-list{display:none;border-top:1px solid var(--border);padding:6px 11px 9px}
+  .trace.open .trace-list{display:block}
+  .trace-item{display:flex;gap:8px;align-items:flex-start;padding:5px 0;font-size:12.2px;line-height:1.5;color:var(--text-3)}
+  .trace-item .ti-ico{width:14px;flex-shrink:0;color:#5ec3ba;display:inline-flex;justify-content:center;padding-top:1px}
+  .trace-item .ti-text{flex:1;min-width:0;word-break:break-word}
+  .trace-item .ti-text b{color:var(--text-2);font-weight:600}
+  .trace-item .ti-res{color:var(--text-3);font-size:11.5px;margin-left:7px}
+  .trace-item .ti-fail{color:var(--danger);font-weight:700;font-size:12px}
+  .trace-empty{padding:4px 0 2px;color:var(--text-3);font-size:12px}
+  .spin{
+    width:12px;height:12px;border-radius:50%;border:2px solid rgba(61,169,160,.25);
+    border-top-color:var(--accent);animation:spin .8s linear infinite;flex-shrink:0;
+  }
+  @keyframes spin{to{transform:rotate(360deg)}}
+  .spin.sm{width:11px;height:11px;border-width:2px;margin-top:2px}
+  /* ===== 来源 ===== */
+  .sources{margin-top:10px}
+  .sources-head{
+    display:inline-flex;align-items:center;gap:6px;font-size:12px;color:var(--text-3);
+    cursor:pointer;padding:3px 0;user-select:none;
+  }
+  .sources-head:hover{color:var(--text-2)}
+  .sources-head .chev{transition:.18s}
+  .sources.collapsed .sources-head .chev{transform:rotate(-90deg)}
+  .sources.collapsed .source-grid{display:none}
+  .source-grid{
+    display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:7px;margin-top:7px;
+  }
+  .source-card{
+    display:flex;gap:8px;align-items:flex-start;padding:9px 10px;border:1px solid var(--border);
+    border-radius:10px;background:rgba(255,255,255,.018);text-decoration:none;color:inherit;
+    transition:.15s;min-width:0;
+  }
+  .source-card:hover{border-color:rgba(61,169,160,.5);background:rgba(61,169,160,.05)}
+  .source-num{
+    width:17px;height:17px;border-radius:5px;background:rgba(61,169,160,.14);color:#8ee0d7;
+    font-size:10px;font-weight:700;display:inline-flex;align-items:center;justify-content:center;
+    flex-shrink:0;margin-top:1px;
+  }
+  .source-main{min-width:0;display:flex;flex-direction:column;gap:3px}
+  .source-title{
+    font-size:12.5px;line-height:1.4;color:var(--text);
+    display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;
+  }
+  .source-site{
+    display:flex;align-items:center;gap:4px;font-size:11px;color:var(--text-3);min-width:0;
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  }
+  .source-icon{width:12px;height:12px;border-radius:3px;flex-shrink:0}
+  .source-snippet{
+    font-size:11.5px;line-height:1.5;color:var(--text-3);
+    display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;
+  }
+  .cite a{
+    display:inline-flex;align-items:center;justify-content:center;min-width:14px;height:14px;
+    padding:0 3px;margin:0 1px;border-radius:4px;background:rgba(61,169,160,.16);color:#8ee0d7;
+    font-size:9.5px;font-weight:700;text-decoration:none;line-height:1;
+  }
+  .cite a:hover{background:var(--accent);color:#0f1d1b}
+  /* ===== 弹窗 ===== */
+  .overlay{
+    position:fixed;inset:0;background:rgba(0,0,0,.55);display:none;align-items:center;justify-content:center;z-index:50;
+  }
+  .overlay.show{display:flex}
+  .modal{
+    width:min(460px,92vw);max-height:88vh;overflow-y:auto;background:var(--panel);border:1px solid var(--border);border-radius:16px;
+    box-shadow:var(--shadow);padding:22px;
+  }
+  .modal h3{font-size:16px;margin-bottom:16px}
+  .field{margin-bottom:14px}
+  .field label{display:block;font-size:13px;color:var(--text-2);margin-bottom:6px}
+  .field input{
+    width:100%;background:var(--panel-2);border:1px solid var(--border);border-radius:10px;padding:10px 12px;
+    font-size:14px;outline:none;
+  }
+  .field input:focus{border-color:var(--accent)}
+  .hint{font-size:12px;color:var(--text-3);line-height:1.6;margin-top:6px}
+  .modal-actions{display:flex;gap:10px;justify-content:flex-end;margin-top:18px}
+  .btn{padding:9px 16px;border-radius:10px;font-size:13.5px;font-weight:600}
+  .btn.primary{background:var(--accent);color:#0f1d1b}
+  .btn.ghost{background:var(--panel-2);color:var(--text-2)}
+  .btn.ghost:hover{color:var(--text)}
+  .toast{
+    position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--panel-2);
+    border:1px solid var(--border);padding:10px 16px;border-radius:10px;font-size:13px;z-index:60;
+    opacity:0;transition:.2s;pointer-events:none;
+  }
+  .toast.show{opacity:1}
+  @media (max-width:720px){
+    aside{position:absolute;z-index:20;transform:translateX(-100%);transition:.2s}
+    aside.open{transform:translateX(0)}
+    .menu-btn{display:inline-flex !important}
+    .composer-hint{display:none}
+    .composer{padding:10px 12px 14px}
+    .messages{padding:18px 14px}
+    .source-grid{grid-template-columns:1fr}
+  }
+  .menu-btn{display:none}
+</style>
+</head>
+<body>
+<!-- ===== 侧边栏 ===== -->
+<aside id="sidebar">
+  <div class="side-head">
+    <div class="brand">DeepSeek 对话</div>
+    <button class="icon-btn" id="btnSettings" title="设置">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3" /><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" /></svg>
+    </button>
+  </div>
+  <button class="new-btn" id="btnNew">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M12 5v14M5 12h14" /></svg>
+    新建对话
+  </button>
+  <div class="conv-list" id="convList"></div>
+  <div class="side-foot">
+    <button class="small-btn" id="btnExport">导出备份</button>
+    <button class="small-btn" id="btnImport">导入备份</button>
+  </div>
+</aside>
+<!-- ===== 主区 ===== -->
+<main>
+  <div class="topbar">
+    <button class="icon-btn menu-btn" id="btnMenu">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M3 12h18M3 18h18" /></svg>
+    </button>
+    <div class="title" id="chatTitle">未选择对话</div>
+    <span class="status" id="statusText"></span>
+    <select id="modelSelect">
+      <option value="deepseek-flash">deepseek-flash (V4.1 Flash)</option>
+      <option value="deepseek-v4-pro">deepseek-v4-pro</option>
+    </select>
+  </div>
+  <div class="messages" id="messages"></div>
+  <div class="composer">
+    <div class="composer-card" id="composerCard">
+      <textarea id="input" rows="1" placeholder="给 DeepSeek 发消息…"></textarea>
+      <div class="composer-bar">
+        <button class="search-toggle" id="btnWebSearch" aria-pressed="false" title="联网搜索：由 DeepSeek 服务端检索网页并附引用作答">
+          <svg class="globe" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><circle cx="12" cy="12" r="9" /><path d="M3.6 9h16.8M3.6 15h16.8" /><path d="M12 3c2.4 2.4 3.6 5.4 3.6 9s-1.2 6.6-3.6 9c-2.4-2.4-3.6-5.4-3.6-9S9.6 5.4 12 3Z" /></svg>
+          <span>联网搜索</span>
+          <span class="net-dot"></span>
+        </button>
+        <select id="searchMode" class="search-mode" title="联网方式：快速 = 关闭思考直接搜索；深度 = 边思考边多步检索">
+          <option value="quick">快速</option>
+          <option value="deep">深度</option>
+        </select>
+        <span class="search-warn" id="searchWarn" hidden title="联网搜索目前仅 deepseek-flash 支持">仅 Flash</span>
+        <span class="flex-spacer"></span>
+        <span class="composer-hint">Enter 发送 · Shift+Enter 换行</span>
+        <button class="send-btn" id="btnSend" title="发送">
+          <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 2 11 13M22 2l-7 20-4-9-9-4 20-7z" /></svg>
+        </button>
+      </div>
+    </div>
+  </div>
+</main>
+<!-- ===== 设置弹窗 ===== -->
+<div class="overlay" id="settingsOverlay">
+  <div class="modal">
+    <h3>API 设置</h3>
+    <div class="field">
+      <label>API Key</label>
+      <input type="password" id="apiKeyInput" placeholder="sk-...">
+      <div class="hint">Key 仅保存在本机浏览器 localStorage，不会上传到其他服务器；源码内不内置任何密钥。</div>
+    </div>
+    <div class="field">
+      <label>接口地址 (Base URL)</label>
+      <input type="text" id="baseUrlInput" placeholder="https://api.deepseek.com">
+      <div class="hint">默认官方地址；如需走代理可替换为兼容 OpenAI 格式的网关。</div>
+    </div>
+    <div class="field">
+      <label>模型</label>
+      <select id="settingsModel" style="width:100%">
+        <option value="deepseek-flash">deepseek-flash (V4.1 Flash)</option>
+        <option value="deepseek-v4-pro">deepseek-v4-pro</option>
+      </select>
+      <div class="hint">联网搜索使用 DeepSeek 服务端工具 <code>deepseek_web_search</code>，需选择 deepseek-flash 并连接官方接口；第三方网关可能不支持。</div>
+    </div>
+    <div class="field">
+      <label style="display:flex;align-items:center;gap:8px">
+        <input type="checkbox" id="smartTitleEnabled" style="width:auto">
+        智能整理对话标题
+      </label>
+      <div class="hint">发出第一句后，自动把问题整理成主题式标题（「比尔盖茨是谁」→「比尔盖茨介绍」）；先由本地规则整理，再用模型润色；手动重命名后不再自动改写。</div>
+      <button class="btn ghost" id="btnRetitleAll" style="width:100%;margin-top:8px">整理现有对话标题</button>
+    </div>
+    <div style="height:1px;background:var(--border);margin:18px 0"></div>
+    <div class="field">
+      <label style="display:flex;align-items:center;gap:8px">
+        <input type="checkbox" id="syncEnabled" style="width:auto">
+        云同步（GitHub 私有 Gist，免费）
+      </label>
+      <div class="hint">支持 Classic(ghp_) / Fine‑grained(github_pat_) token；细粒度需要授予Gist读写权限。</div>
+    </div>
+    <div class="field">
+      <label>GitHub Token（Classic / Fine‑grained）</label>
+      <input type="password" id="gistTokenInput" placeholder="ghp_… / github_pat_…">
+      <div class="hint">Fine‑grained：Gists → Read and write；Token只存本机浏览器。</div>
+    </div>
+    <div class="field">
+      <label>Gist ID（留空：首次保存时自动新建）</label>
+      <input type="text" id="gistIdInput" placeholder="可选">
+      <div class="hint">同一个 Gist ID 即在多台设备间共享同一份历史；不要把 ID 和 Token 泄露给他人。</div>
+    </div>
+    <div class="field" style="display:flex;gap:8px">
+      <button class="btn ghost" id="btnPushCloud" style="flex:1">立即上传到云端</button>
+      <button class="btn ghost" id="btnPullCloud" style="flex:1">从云端拉取</button>
+    </div>
+    <div class="modal-actions">
+      <button class="btn ghost" id="btnClearKey">清除 Key</button>
+      <button class="btn ghost" id="btnCloseSettings">取消</button>
+      <button class="btn primary" id="btnSaveSettings">保存</button>
+    </div>
+  </div>
+</div>
+<input type="file" id="fileInput" accept="application/json" hidden>
+<div class="toast" id="toast"></div>
+<script>
+/* ============================================================
+ * 存储：
+ * ds_title_map_v1：{convId:"对话标题"}
+ * ds_records_v1：[{recordId,convId,role,content,ts,...}]
+ * ds_settings_v1：设置
+ * ETag乐观锁；同时兼容 Classic(ghp_) 与 Fine‑grained(github_pat_) token
+ *
+ * 联网搜索：
+ * 请求中声明 DeepSeek 服务端工具 deepseek_web_search / deepseek_read_url，
+ * 搜索与抓取都在服务端完成。流式响应通过 server_tool_event 汇报搜索过程，
+ * 最终 chunk 的 delta 中带 annotations（引用，按 Unicode 码点定位）与
+ * server_tool_calls（工具调用记录，下一轮原样回传）。
+ * ============================================================ */
+const LS_TITLE_MAP = 'ds_title_map_v1';
+const LS_RECORDS   = 'ds_records_v1';
+const LS_SET       = 'ds_settings_v1';
+const LS_ETAG_CACHE = 'ds_gist_etag_v1';
+const LS_TITLE_MANUAL = 'ds_title_manual_v1';
+const GIST_FILENAME = 'deepseek-chat-backup.json';
+const SEARCH_TOOL = 'deepseek_web_search';
+const READ_TOOL = 'deepseek_read_url';
+
+const state = {
+  titleMap: {},
+  titleManual: {},
+  records: [],
+  activeConvId: null,
+  settings: {
+    apiKey:'', baseUrl:'https://api.deepseek.com', model:'deepseek-flash',
+    syncEnabled:false, gistToken:'', gistId:'',
+    webSearch:false, searchMode:'quick', smartTitle:true
+  },
+  sending: false,
+  abort: null,
+  stream: null,
+  atBottom: true,
+  syncTimer: null,
+  syncBusy: false
+};
+
+const ICON_SEARCH = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.6-3.6"/></svg>';
+const ICON_PAGE = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><rect x="4" y="3.5" width="16" height="17" rx="2"/><path d="M8 8h8M8 12h8M8 16h5"/></svg>';
+const ICON_LINK = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.5.5l2-2a5 5 0 0 0-7-7l-1 1"/><path d="M14 11a5 5 0 0 0-7.5-.5l-2 2a5 5 0 0 0 7 7l1-1"/></svg>';
+const ICON_CHECK = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="m5 12 5 5L20 7"/></svg>';
+const ICON_CHEV = '<svg class="chev" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="m6 9 6 6 6-6"/></svg>';
+const ICON_GLOBE = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><circle cx="12" cy="12" r="9"/><path d="M3.6 9h16.8M3.6 15h16.8"/><path d="M12 3c2.4 2.4 3.6 5.4 3.6 9s-1.2 6.6-3.6 9c-2.4-2.4-3.6-5.4-3.6-9S9.6 5.4 12 3Z"/></svg>';
+
+/* ---------- 持久化读写 ---------- */
+function load(){
+  try{
+    const tm = JSON.parse(localStorage.getItem(LS_TITLE_MAP)||'{}');
+    state.titleMap = (typeof tm === 'object' && tm) ? tm : {};
+  }catch(e){ state.titleMap = {}; }
+
+  try{
+    const tmManual = JSON.parse(localStorage.getItem(LS_TITLE_MANUAL)||'{}');
+    state.titleManual = (typeof tmManual === 'object' && tmManual) ? tmManual : {};
+  }catch(e){ state.titleManual = {}; }
+
+  try{
+    const rec = JSON.parse(localStorage.getItem(LS_RECORDS)||'[]');
+    state.records = Array.isArray(rec) ? rec : [];
+  }catch(e){ state.records = []; }
+
+  try{
+    const s = JSON.parse(localStorage.getItem(LS_SET) || '{}');
+    state.settings = Object.assign(state.settings, s || {});
+  }catch(e){}
+  state.settings.webSearch = !!state.settings.webSearch;
+  state.settings.searchMode = state.settings.searchMode === 'deep' ? 'deep' : 'quick';
+  state.settings.smartTitle = state.settings.smartTitle !== false;
+}
+
+function saveTitleMap(){
+  localStorage.setItem(LS_TITLE_MAP, JSON.stringify(state.titleMap));
+  scheduleCloudPush();
+}
+
+function saveTitleManual(){
+  try{ localStorage.setItem(LS_TITLE_MANUAL, JSON.stringify(state.titleManual)); }catch(e){}
+}
+function saveRecords(){
+  try{
+    localStorage.setItem(LS_RECORDS, JSON.stringify(state.records));
+  }catch(e){
+    // 空间不足时先丢弃阅读链接加密正文（signature），保留其余记录
+    const slim = state.records.map(r=>{
+      if(!Array.isArray(r.server_tool_calls)) return r;
+      return Object.assign({}, r, {
+        server_tool_calls: r.server_tool_calls.map(step=>Object.assign({}, step, {
+          calls: (step.calls||[]).map(c=>{
+            if(!c || !c.signature) return c;
+            const copy = Object.assign({}, c);
+            delete copy.signature;
+            return copy;
+          })
+        }))
+      });
+    });
+    try{
+      localStorage.setItem(LS_RECORDS, JSON.stringify(slim));
+      toast('本地存储空间不足，已省略部分网页缓存');
+    }catch(e2){
+      toast('本地存储已满，本次记录未能保存');
+    }
+  }
+  scheduleCloudPush();
+}
+function saveSettings(){
+  localStorage.setItem(LS_SET, JSON.stringify(state.settings));
+}
+function cacheLocalEtag(etag){
+  if(etag){
+    localStorage.setItem(LS_ETAG_CACHE, etag);
+  }else{
+    localStorage.removeItem(LS_ETAG_CACHE);
+  }
+}
+function getLocalEtag(){
+  return localStorage.getItem(LS_ETAG_CACHE) || null;
+}
+
+/* ---------- 工具函数 ---------- */
+const $ = id => document.getElementById(id);
+function uid(){ return Date.now().toString(36) + Math.random().toString(36).slice(2,7); }
+function esc(s){
+  return String(s == null ? '' : s).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+}
+function toast(msg){
+  const t = $('toast'); t.textContent = msg; t.classList.add('show');
+  clearTimeout(t._timer); t._timer = setTimeout(()=>t.classList.remove('show'), 2200);
+}
+function safeUrl(u){
+  if(typeof u !== 'string') return '';
+  try{
+    const url = new URL(u);
+    return (url.protocol === 'http:' || url.protocol === 'https:') ? url.href : '';
+  }catch(e){ return ''; }
+}
+function hostOf(u){
+  try{ return new URL(u).hostname.replace(/^www\./,''); }catch(e){ return String(u||''); }
+}
+function fmtDate(s){
+  if(!s) return '';
+  const m = String(s).match(/^\d{4}-\d{2}-\d{2}/);
+  return m ? m[0] : '';
+}
+function isNearBottom(el, slack=100){
+  return el.scrollHeight - el.scrollTop - el.clientHeight < slack;
+}
+function autoGrow(el){
+  if(!el) return;
+  el.style.height = 'auto';
+  el.style.height = Math.min(el.scrollHeight, 180) + 'px';
+}
+function setStatus(text){
+  $('statusText').textContent = text || '';
+}
+
+// 自动区分 token 类型：
+// ghp_ → Classic → token xxx
+// github_pat_ → Fine‑grained → Bearer xxx
+function buildAuthHeader(token){
+  if(token.startsWith('github_pat_')){
+    return { 'Authorization': 'Bearer ' + token };
+  }else{
+    return { 'Authorization': 'token ' + token };
+  }
+}
+
+/* 极简Markdown渲染 */
+function renderMd(text){
+  const parts = [];
+  const codeBlockRe = /```(\w*)\n?([\s\S]*?)```/g;
+  let last = 0, m;
+  while((m = codeBlockRe.exec(text))){
+    if(m.index > last) parts.push({type:'text', val:text.slice(last, m.index)});
+    parts.push({type:'code', lang:m[1], val:m[2].replace(/\n$/,'')});
+    last = m.index + m[0].length;
+  }
+  if(last < text.length) parts.push({type:'text', val:text.slice(last)});
+  return parts.map(p => {
+    if(p.type === 'code'){
+      return '<pre><code>' + esc(p.val) + '</code></pre>';
+    }
+    let html = esc(p.val);
+    html = html.replace(/`([^`]+)`/g, '<code style="background:#111317;border:1px solid var(--border);border-radius:5px;padding:1px 5px">$1</code>');
+    html = html.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+    const lines = html.split('\n');
+    let out = '', inUl = false, inOl = false;
+    const closeLists = () => { if(inUl){out+='</ul>';inUl=false;} if(inOl){out+='</ol>';inOl=false;} };
+    for(const line of lines){
+      const ul = line.match(/^\s*[-•]\s+(.*)$/);
+      const ol = line.match(/^\s*\d+\.\s+(.*)$/);
+      if(ul){
+        if(inOl){out+='</ol>';inOl=false;} if(!inUl){out+='<ul>';inUl=true;}
+        out += '<li>' + ul[1] + '</li>';
+      }else if(ol){
+        if(inUl){out+='</ul>';inUl=false;} if(!inOl){out+='<ol>';inOl=true;}
+        out += '<li>' + ol[1] + '</li>';
+      }else{
+        closeLists();
+        if(line.trim()) out += '<p>' + line + '</p>';
+      }
+    }
+    closeLists();
+    return out;
+  }).join('');
+}
+
+/* Chat Completions 的引用格式为 {type:"url_citation", url_citation:{url,title,start_index,end_index}}，
+ * 也兼容扁平的 {url,title,start_index}，统一成扁平结构后再使用。 */
+function normaliseAnnotation(a){
+  if(!a) return null;
+  const c = a.url_citation || a;
+  const url = c.url || a.url;
+  if(!url) return null;
+  const start = Number(c.start_index != null ? c.start_index : a.start_index);
+  const end = Number(c.end_index != null ? c.end_index : a.end_index);
+  return {
+    url: url,
+    title: c.title || a.title || '',
+    start_index: Number.isFinite(start) && start >= 0 ? start : 0,
+    end_index: Number.isFinite(end) ? end : null
+  };
+}
+function normaliseAnnotations(list){
+  return (Array.isArray(list) ? list : []).map(normaliseAnnotation).filter(Boolean);
+}
+
+/* 引用编号：按 annotations 中首次出现的顺序编号（入参需已归一化） */
+function citationIndex(annotations){
+  const numByUrl = new Map(), urlByNum = new Map(), titleByNum = new Map();
+  (Array.isArray(annotations) ? annotations : []).forEach(a=>{
+    if(!a || !a.url) return;
+    if(!numByUrl.has(a.url)){
+      const n = numByUrl.size + 1;
+      numByUrl.set(a.url, n);
+      urlByNum.set(n, a.url);
+      titleByNum.set(n, a.title || '');
+    }else if(a.title && !titleByNum.get(numByUrl.get(a.url))){
+      titleByNum.set(numByUrl.get(a.url), a.title);
+    }
+  });
+  return { numByUrl, urlByNum, titleByNum };
+}
+
+/* 正文 + 行内引用角标 */
+function renderAssistantHtml(record){
+  const content = record.content || '';
+  const annotations = normaliseAnnotations(record.annotations);
+  if(!annotations.length) return renderMd(content);
+
+  const idx = citationIndex(annotations);
+  const sourceByUrl = new Map((record.sources||[]).filter(s=>s && s.url).map(s=>[s.url, s]));
+  const chars = Array.from(content);
+  const insertions = new Map();
+
+  annotations.forEach(a=>{
+    const n = idx.numByUrl.get(a.url);
+    if(!n) return;
+    // 角标放在被引用片段的末尾（end_index），没有 end_index 时退回 start_index
+    let pos = Number(a.end_index);
+    if(!Number.isFinite(pos) || pos < 0) pos = Number(a.start_index);
+    if(!Number.isFinite(pos) || pos < 0) pos = 0;
+    pos = Math.min(pos, chars.length);
+    if(!insertions.has(pos)) insertions.set(pos, new Set());
+    insertions.get(pos).add(n);
+  });
+
+  const positions = [...insertions.keys()].sort((a,b)=>b-a);
+  for(const pos of positions){
+    const token = [...insertions.get(pos)].sort((a,b)=>a-b).map(n=>'\uE000' + n + '\uE001').join('');
+    chars.splice(pos, 0, token);
+  }
+
+  let html = renderMd(chars.join(''));
+  html = html.replace(/\uE000(\d+)\uE001/g, (m, n)=>{
+    const num = Number(n);
+    const url = idx.urlByNum.get(num) || '';
+    const src = sourceByUrl.get(url);
+    const title = idx.titleByNum.get(num) || (src && src.title) || url;
+    const href = safeUrl(url);
+    if(!href) return '<span class="cite"><span>' + num + '</span></span>';
+    return '<sup class="cite"><a href="' + esc(href) + '" target="_blank" rel="noopener noreferrer" title="' + esc(title) + '">' + num + '</a></sup>';
+  });
+  return html;
+}
+
+/* ---------- 会话操作 ---------- */
+function getConvRecords(convId){
+  return state.records.filter(r=>r.convId === convId).sort((a,b)=>Number(a.ts)-Number(b.ts));
+}
+
+function getAllConvIds(){
+  const convSet = new Set(state.records.map(r=>r.convId));
+  Object.keys(state.titleMap).forEach(k=>convSet.add(k));
+  const ids = Array.from(convSet);
+  ids.sort((idA,idB)=>{
+    const lastA = getConvRecords(idA).at(-1)?.ts||0;
+    const lastB = getConvRecords(idB).at(-1)?.ts||0;
+    return Number(lastB)-Number(lastA);
+  });
+  return ids;
+}
+
+function newConversation(){
+  const convId = uid();
+  state.titleMap[convId] = "新对话";
+  saveTitleMap();
+  state.activeConvId = convId;
+  renderList(); renderMessages();
+}
+
+function selectConversation(convId){
+  state.activeConvId = convId;
+  renderList(); renderMessages();
+}
+
+function deleteConversation(convId){
+  const title = state.titleMap[convId]||"未命名";
+  if(!confirm(`删除对话「${title}」？此操作不可恢复。`)) return;
+  state.records = state.records.filter(r=>r.convId!==convId);
+  delete state.titleMap[convId];
+  delete state.titleManual[convId];
+  saveRecords(); saveTitleMap(); saveTitleManual();
+  const all = getAllConvIds();
+  state.activeConvId = all.length>0 ? all[0] : null;
+  renderList(); renderMessages();
+}
+
+function renameConversation(convId){
+  const old = state.titleMap[convId]||"";
+  const name = prompt('对话名称（留空则恢复自动整理）：', old);
+  if(name === null) return;
+  const next = name.trim();
+  if(next){
+    state.titleMap[convId] = next;
+    state.titleManual[convId] = true;   // 手动命名后不再被自动整理改写
+    saveTitleMap(); saveTitleManual();
+    renderList(); renderMessages();
+    return;
+  }
+  // 留空 = 取消手动命名，按第一句提问重新整理
+  delete state.titleManual[convId];
+  saveTitleManual();
+  const first = getConvRecords(convId).find(r=>r.role === 'user' && r.content);
+  const auto = first ? smartTitle(first.content) : ''
+  state.titleMap[convId] = auto || '未命名对话';
+  saveTitleMap();
+  renderList(); renderMessages();
+}
+
+function addRecord(convId, role, content, extra){
+  const rec = Object.assign({
+    recordId: uid(),
+    convId: convId,
+    role: role,
+    content: content,
+    ts: Date.now()
+  }, extra || {});
+  state.records.push(rec);
+  saveRecords();
+  return rec;
+}
+
+/* ---------- 对话标题自动整理 ----------
+ * 目标：把用户第一句提问整理成主题式标题，而不是原样摘录问题。
+ * 例：「比尔盖茨是谁」→「比尔盖茨介绍」
+ * 流程：本地规则立刻改名（离线可用）→ 再用模型润色（有 Key 时）→ 手动命名后永久锁定
+ * ------------------------------------ */
+const TITLE_MAX = 20;
+const TITLE_GREET = /^(你好|您好|嗨|哈喽|在吗|在么|打扰一下|打扰了|请问一下|请问|请教一下|请教|想问一下|想问问|我想问问|我想问一下|我想问|想问|我想知道|想知道|我想了解|想了解|帮我|帮忙|麻烦你|麻烦|劳驾|能不能|能否|可不可以|可以帮我|请你|请)\s*[,，、。.！!~～:：]?\s*/;
+const TITLE_EN_GREET = /^(?:hi|hello|hey)\b[\s,!.~-]*/i;
+const TITLE_VERB_INTRO = /^(?:给我|帮我)?(?:介绍一下|介绍下|介绍(?![信所费]))\s*/;
+const TITLE_VERB_SAY = /^(?:给我)?(?:说一下|说说|讲一下|讲讲|聊一聊|聊聊|谈一谈|谈谈|解释一下|解释下|说明一下|分析一下|评价一下|总结一下|列举一下|查一下|看看|看一下|瞅瞅|搜一下|搜索一下)\s*/;
+
+/* 截断到标题长度上限 */
+function titleClip(s){
+  let t = String(s == null ? '' : s).replace(/\s+/g, ' ').trim();
+  t = t.replace(/^[\s「『"'“”‘’《》【】()（）]+|[\s」』"'“”‘’《》【】()（）]+$/g, '');
+  t = t.replace(/[\s,，、;；:：.。!！~～-]+$/, '');
+  if(t.length > TITLE_MAX){
+    t = t.slice(0, TITLE_MAX).replace(/[\s,，、;；:：.。!！~～-]+$/, '') + '…';
+  }
+  return t;
+}
+
+/* 去掉句末语气词、标点与多余的「的」 */
+function titleCore(s){
+  let t = String(s == null ? '' : s).replace(/\s+/g, ' ').trim();
+  t = t.replace(/[\s,，、;；:：.。!！?？~～]+$/g, '').trim();
+  for(let i = 0; i < 4; i++){
+    const before = t;
+    t = t.replace(/(吗|呢|吧|啊|呀|嘛|哦|哈|么|啦|嘞|哟)$/, '').trim();
+    if(t.endsWith('的') && !'目有似'.includes(t.slice(-2, -1))) t = t.slice(0, -1).trim();
+    if(t === before) break;
+  }
+  return t;
+}
+
+/* 「为什么……」的核心：去掉开头的 会/能/要 之类 */
+function reasonCore(s){
+  return titleCore(s).replace(/^(?:才|就会|会|能|要|总是|都|就|再)+/, '').trim();
+}
+
+/* 英文提问 → 标题化 */
+function enTitle(t){
+  let e = t.replace(/^(?:please\s+)?(?:who\s+is|who\s+was|what\s+is|what\s+are|what's|how\s+to|how\s+do\s+i|how\s+does|why\s+(?:is|are|do|does|did)|when\s+(?:is|was|did)|where\s+is|can\s+you|could\s+you|explain|tell\s+me\s+about|define|meaning\s+of)\s+/i, '');
+  e = e.replace(/^(?:to|the|a|an)\s+/i, '');
+  e = e.replace(/[?.!]+$/, '').replace(/\s+/g, ' ').trim();
+  if(!e) return titleCore(t);
+  return e.split(' ').map(w=>{
+    if(!w || /[A-Z]/.test(w.slice(1))) return w;
+    return w.charAt(0).toUpperCase() + w.slice(1);
+  }).join(' ');
+}
+
+/* 把一句提问整理成主题式标题 */
+function smartTitle(raw){
+  const src = String(raw == null ? '' : raw);
+  let t = src.replace(/\r/g, '\n').replace(/[ \t\u3000]+/g, ' ').trim();
+  if(!t) return '';
+  t = t.split(/[。！!？?；;\n]/)[0].trim();
+  t = t.replace(/^[「『"'“”‘’《》【】\s]+|[\s」』"'“”‘’《》【】]+$/g, '').trim();
+  if(!t) return '';
+
+  let introVerb = false;
+  for(let i = 0; i < 6; i++){
+    const before = t;
+    t = t.replace(TITLE_EN_GREET, '').replace(TITLE_GREET, '').trim();
+    if(TITLE_VERB_INTRO.test(t)){ introVerb = true; t = t.replace(TITLE_VERB_INTRO, '').trim(); }
+    t = t.replace(TITLE_VERB_SAY, '').replace(/^[,，、:：]\s*/, '').trim();
+    if(t === before) break;
+  }
+  if(!t) return '';
+  if(!/[\u4e00-\u9fa5]/.test(t)) return titleClip(enTitle(t));
+
+  let m;
+
+  /* 助手自身 */
+  if(/^(?:你|您)(?:是谁|是谁呀|叫什么|叫什么名字|是干什么的|是做什么的|能做什么|可以做什么|有什么功能|有哪些功能|能干什么)$/.test(t)) return '助手介绍';
+  if(/^(?:你|您)(?:能|可以|会)(?:做|干)?(?:什么|啥)(?:呢|吗)?$/.test(t)) return '助手能力介绍';
+
+  /* 用途与含义 */
+  if((m = t.match(/^(.{1,30}?)(?:有什么作用|有什么用|有什么用途|有啥用|能干什么|能做什么|用来做什么|是做什么用的)$/))) return titleClip(titleCore(m[1]) + '的用途');
+  if((m = t.match(/^(.{1,30}?)(?:是什么意思|的意思是什么|什么意思|有何含义|的含义是什么|意味着什么)$/))) return titleClip(titleCore(m[1]) + '的含义');
+
+  /* 人物与定义：X是谁 / 什么是X / X是什么 */
+  if((m = t.match(/^(?:谁是|何为|什么叫作?|什么是|啥是)\s*(.{1,40})$/))) return titleClip(titleCore(m[1]) + '介绍');
+  if((m = t.match(/^(.{1,40}?)\s*(?:是哪位|是谁|是什么人|是何许人也|是何许人|是什么人物|是什么东西|是啥)$/))) return titleClip(titleCore(m[1]) + '介绍');
+  if((m = t.match(/^(.{1,40}?)\s*(?:是什么|的定义是什么|的定义)$/))) return titleClip(titleCore(m[1]) + '介绍');
+
+  /* 对比与区别 */
+  if((m = t.match(/^(.{1,28}?)\s*(?:和|与|跟|及|vs\.?|VS)\s*(.{1,28}?)\s*(?:之间)?\s*(?:有什么|有哪些|有啥|有何)?\s*(?:区别|不同|差异|分别是什么)$/))){
+    const a = titleCore(m[1]), b = titleCore(m[2]);
+    return titleClip(a + '与' + b + (b.indexOf('的') >= 0 ? '区别' : '的区别'));
+  }
+  if((m = t.match(/^(.{1,28}?)\s*(?:vs\.?|VS)\s*(.{1,28})$/i))) return titleClip(titleCore(m[1]) + '与' + titleCore(m[2]) + '对比');
+  if((m = t.match(/^(.{1,28}?)\s*(?:和|与|跟)\s*(.{1,28}?)\s*(?:哪个好|哪个更好|哪个值得买|选哪个|该选哪个)$/))) return titleClip(titleCore(m[1]) + '与' + titleCore(m[2]) + '对比');
+
+  /* 原因 */
+  if((m = t.match(/^(?:为什么|为何|为啥|怎么会|怎么就)\s*(.{1,40})$/))) return titleClip(reasonCore(m[1]) + '的原因');
+  if((m = t.match(/^(.{1,30}?)\s*(?:为什么|为何|为啥)\s*(.{1,30})$/))) return titleClip(reasonCore(m[1] + m[2]) + '的原因');
+
+  /* 方法：怎么看 / 怎么办 / 怎么做 */
+  if((m = t.match(/^(?:如何评价|怎么评价|怎样评价|如何看待|怎么看)\s*(.{1,40})$/))) return titleClip('如何看待' + titleCore(m[1]));
+  if((m = t.match(/^(.{1,30}?)\s*(?:怎么办|怎么解决|怎么处理|如何解决|如何处理|该怎么弄|该咋办|怎么破|怎样解决|怎样处理|咋办)$/))) return titleClip(titleCore(m[1]) + '的解决办法');
+  if((m = t.match(/^(?:怎么样|怎么|怎样|如何|咋样|咋)\s*(?:才能够|才能|才可以|可以|才|能)?\s*(.{1,40})$/))) return titleClip(titleCore(m[1]) + '的方法');
+
+  /* 列举 */
+  if((m = t.match(/^(.{1,30}?)\s*(?:都|又)?\s*(?:有哪些|有什么|有啥|包括哪些|包含哪些)\s*(.{0,16})$/))){
+    const base = titleCore(m[1]);
+    const rest = titleCore(m[2]);
+    if(/^(?:好玩|好吃|好看|值得去|值得买|值得推荐|推荐)/.test(rest)) return titleClip(base + '推荐');
+    if(!rest) return titleClip(base + '一览');
+    return titleClip(base + '的' + rest);
+  }
+  if((m = t.match(/^(?:有哪些|有什么|有啥)\s*(.{1,40})$/))) return titleClip(titleCore(m[1]));
+
+  /* 兜底：去掉疑问句尾后直接作为标题 */
+  let core = titleCore(t);
+  core = core.replace(/(?:是什么|是谁|怎么样|如何|为什么|为何|有哪些|有什么|吗|呢|吧)$/, '').trim();
+  if(!core) core = titleCore(src);
+  if(introVerb && core && !/(介绍|简介|概览|详解)$/.test(core)) core += '介绍';
+  return titleClip(core || titleCore(src));
+}
+
+/* 侧边栏与顶栏的标题局部刷新（不重建消息区，避免打断流式输出） */
+function refreshTitleUI(convId){
+  renderList();
+  if(state.activeConvId === convId){
+    const el = $('chatTitle');
+    if(el) el.textContent = state.titleMap[convId] || '未命名对话';
+  }
+}
+
+/* 用模型把问题整理成更自然的标题；失败时静默回退到本地规则 */
+async function requestAiTitle(text){
+  if(!state.settings.apiKey) return '';
+  const ctrl = new AbortController();
+  const timer = setTimeout(()=>ctrl.abort(), 12000);
+  try{
+    const resp = await fetch(apiUrl(), {
+      method:'POST',
+      headers:{ 'Content-Type':'application/json', 'Authorization':'Bearer ' + state.settings.apiKey },
+      body: JSON.stringify({
+        model: state.settings.model,
+        messages:[
+          { role:'system', content:'你是对话标题整理助手。把用户的第一句提问改写成一个简短的中文对话标题：只保留名词性短语，去掉疑问语气和客套话，不超过 14 个字，不要引号、书名号、标点，也不要回答问题。示例：\n用户：比尔盖茨是谁 → 比尔盖茨介绍\n用户：为什么天空是蓝色的 → 天空呈蓝色的原因\n用户：帮我写一封请假邮件 → 请假邮件撰写\n直接输出标题本身。' },
+          { role:'user', content: String(text).slice(0, 500) }
+        ],
+        temperature: 0.3,
+        max_tokens: 40,
+        stream: false
+      }),
+      signal: ctrl.signal
+    });
+    if(!resp.ok) return '';
+    const data = await resp.json();
+    const choice = (((data || {}).choices || [])[0] || {}).message || {};
+    return cleanAiTitle(choice.content || '');
+  }catch(e){
+    return '';
+  }finally{
+    clearTimeout(timer);
+  }
+}
+
+/* 清理模型返回的标题 */
+function cleanAiTitle(s){
+  let t = String(s == null ? '' : s).replace(/\r/g, '\n').split('\n').map(x=>x.trim()).filter(Boolean)[0] || '';
+  t = t.replace(/^(?:标题|对话标题|标题是|标题为)\s*[:：]?\s*/, '');
+  t = t.replace(/^["'“”‘’「」『』《》【】]+|["'“”‘’「」『』《》【】]+$/g, '');
+  t = t.replace(/[。.，,、；;：:！!？?～~]+$/g, '').trim();
+  if(!t || t.length > 30) return '';
+  if(/^(?:抱歉|对不起|无法|我不能)/.test(t)) return '';
+  return titleClip(t);
+}
+
+/* 第一句用户提问后：先用本地规则立刻改名，再按需让模型润色 */
+/* 标题仍是占位符（还没整理出主题） */
+function isPlaceholderTitle(convId){
+  const cur = state.titleMap[convId];
+  return !cur || cur === '新对话' || cur === '未命名对话' || cur === '未命名';
+}
+
+async function autoTitle(convId, firstUserText){
+  if(state.settings.smartTitle === false) return;
+  if(state.titleManual[convId]) return;   // 手动命名优先，不被覆盖
+  const users = getConvRecords(convId).filter(x=>x.role === 'user');
+  // 正常只在第一句提问时整理；若第一句只是「你好」之类没整理出标题，下一句接着整理
+  if(users.length !== 1 && !isPlaceholderTitle(convId)) return;
+  const base = smartTitle(firstUserText);
+  if(!base) return;                       // 纯招呼/空话，等用户下一句
+  state.titleMap[convId] = base;
+  saveTitleMap();
+  refreshTitleUI(convId);
+  const refined = await requestAiTitle(firstUserText);
+  if(!refined) return;
+  if(state.titleManual[convId]) return;
+  if(!Object.prototype.hasOwnProperty.call(state.titleMap, convId)) return;
+  state.titleMap[convId] = refined;
+  saveTitleMap();
+  refreshTitleUI(convId);
+}
+
+/* 批量整理现有对话标题（只处理未被手动命名的对话） */
+function tidyAllTitles(){
+  let changed = 0;
+  getAllConvIds().forEach(cid=>{
+    if(state.titleManual[cid]) return;
+    const first = getConvRecords(cid).find(r=>r.role === 'user' && r.content);
+    if(!first) return;
+    const next = smartTitle(first.content);
+    if(next && next !== state.titleMap[cid]){
+      state.titleMap[cid] = next;
+      changed++;
+    }
+  });
+  if(changed){
+    saveTitleMap();
+    renderList();
+    renderMessages();
+  }
+  return changed;
+}
+
+/* 构造请求消息：助手消息保留 server_tool_calls，供下一轮还原阅读过的网页 */
+function buildApiMessages(convId, excludeRecordId){
+  const out = [];
+  getConvRecords(convId).forEach(r=>{
+    if(r.recordId === excludeRecordId) return;
+    if(r.role === 'assistant'){
+      const content = (r.content || '').trim();
+      const hasTools = Array.isArray(r.server_tool_calls) && r.server_tool_calls.length > 0;
+      if(!content && !hasTools) return;
+      const msg = { role:'assistant', content: r.content || '' };
+      if(hasTools) msg.server_tool_calls = r.server_tool_calls;
+      out.push(msg);
+    }else if(r.role === 'user'){
+      out.push({ role:'user', content: r.content || '' });
+    }
+  });
+  return out;
+}
+
+/* ---------- 搜索轨迹 ---------- */
+function flattenCalls(steps){
+  const out = [];
+  (Array.isArray(steps) ? steps : []).forEach(step=>{
+    (step && Array.isArray(step.calls) ? step.calls : []).forEach(c=>{ if(c) out.push(c); });
+  });
+  return out;
+}
+
+function traceItemHtml(call){
+  const a = (call && call.action) || {};
+  let icon = ICON_SEARCH, label = '', extra = '';
+  if(a.type === 'search'){
+    const queries = Array.isArray(a.queries) ? a.queries.filter(Boolean).slice(0,4) : [];
+    label = '搜索' + (queries.length ? ' ' + queries.map(q=>'「' + esc(q) + '」').join(' ') : '');
+    if(call.status === 'failed'){
+      extra = '失败';
+    }else if(Array.isArray(call.sources) && call.sources.length){
+      extra = call.sources.length + ' 个结果';
+    }else if(call.status !== 'running'){
+      extra = '无结果';
+    }
+  }else if(a.type === 'open_page'){
+    icon = ICON_PAGE;
+    label = '打开网页 <b>' + esc((call.page && call.page.title) || hostOf(a.url)) + '</b>';
+    if(call.status === 'failed') extra = '失败';
+  }else if(a.type === 'find_in_page'){
+    icon = ICON_PAGE;
+    label = '页内查找「' + esc(a.pattern || '') + '」';
+  }else if(a.type === 'read_link'){
+    icon = ICON_LINK;
+    label = '阅读链接 <b>' + esc((call.page && call.page.title) || hostOf(a.url)) + '</b>';
+    if(call.status === 'failed') extra = '失败';
+  }else{
+    label = '联网操作';
+  }
+  let stateIcon = '';
+  if(call.status === 'running') stateIcon = '<span class="spin sm"></span>';
+  else if(call.status === 'failed') stateIcon = '<span class="ti-fail">!</span>';
+  return '<div class="trace-item">'
+    + '<span class="ti-ico">' + icon + '</span>'
+    + '<span class="ti-text">' + label + (extra ? '<span class="ti-res">' + esc(extra) + '</span>' : '') + '</span>'
+    + stateIcon + '</div>';
+}
+
+function traceInfo(record, live){
+  const calls = flattenCalls(record.server_tool_calls);
+  const searches = calls.filter(c=>c.action && c.action.type === 'search').length;
+  const pages = calls.filter(c=>c.action && (c.action.type === 'open_page' || c.action.type === 'read_link')).length;
+  const sourceCount = (record.sources || []).length;
+  const running = !!(live && record.status === 'running');
+
+  const bits = [];
+  if(searches) bits.push(searches + ' 次搜索');
+  if(pages) bits.push(pages + ' 个网页');
+  if(sourceCount) bits.push(sourceCount + ' 个来源');
+
+  let title = '联网检索';
+  if(running) title = record.searchMode === 'deep' ? '正在深度检索…' : '正在联网搜索…';
+  else if(record.status === 'error') title = '联网检索未完成';
+  else if(record.status === 'stopped') title = '联网检索已停止';
+
+  let meta = bits.join(' · ');
+  if(!calls.length && !running) meta = '本次未触发搜索';
+  return { calls, running, title, meta, open: running };
+}
+
+function traceHtml(record, live){
+  if(!record || !record.searched) return '';
+  const info = traceInfo(record, live);
+  const headIcon = info.running ? '<span class="spin"></span>' : ICON_GLOBE;
+  const list = info.calls.length
+    ? info.calls.map(traceItemHtml).join('')
+    : '<div class="trace-empty">' + (info.running ? '正在判断是否需要检索…' : '模型认为这次提问不需要搜索。') + '</div>';
+  return '<div class="trace' + (info.open ? ' open' : '') + '">'
+    + '<div class="trace-head" role="button" tabindex="0">'
+    + headIcon
+    + '<span class="t-title">' + esc(info.title) + '</span>'
+    + '<span class="t-meta">' + esc(info.meta) + '</span>'
+    + ICON_CHEV
+    + '</div>'
+    + '<div class="trace-list">' + list + '</div>'
+    + '</div>';
+}
+
+/* ---------- 来源卡片 ---------- */
+function buildSourceList(record){
+  const annotations = normaliseAnnotations(record.annotations);
+  const idx = citationIndex(annotations);
+  const map = new Map();
+  (record.sources || []).forEach(s=>{ if(s && s.url) map.set(s.url, s); });
+  annotations.forEach(a=>{
+    if(a && a.url && !map.has(a.url)) map.set(a.url, { url:a.url, title:a.title || '' });
+  });
+  const list = [...map.values()];
+  list.sort((a,b)=>{
+    const na = idx.numByUrl.get(a.url) || 1e9;
+    const nb = idx.numByUrl.get(b.url) || 1e9;
+    return na - nb;
+  });
+  return list.map(s=>Object.assign({}, s, { citeNum: idx.numByUrl.get(s.url) || null }));
+}
+
+function sourceCardHtml(s){
+  const url = safeUrl(s.url) || '#';
+  const site = s.site_name || hostOf(s.url);
+  const date = fmtDate(s.published_at || s.page_age);
+  const iconUrl = safeUrl(s.site_icon);
+  const icon = iconUrl
+    ? '<img class="source-icon" src="' + esc(iconUrl) + '" alt="" referrerpolicy="no-referrer" onerror="this.remove()">'
+    : '';
+  return '<a class="source-card" href="' + esc(url) + '" target="_blank" rel="noopener noreferrer">'
+    + '<span class="source-num">' + (s.citeNum || '·') + '</span>'
+    + '<span class="source-main">'
+    + '<span class="source-title">' + esc(s.title || hostOf(s.url)) + '</span>'
+    + '<span class="source-site">' + icon + esc(site) + (date ? ' · ' + esc(date) : '') + '</span>'
+    + (s.snippet ? '<span class="source-snippet">' + esc(s.snippet) + '</span>' : '')
+    + '</span></a>';
+}
+
+function sourcesHtml(record){
+  const list = buildSourceList(record);
+  if(!list.length) return '';
+  const expanded = list.length <= 3;
+  return '<div class="sources' + (expanded ? '' : ' collapsed') + '">'
+    + '<div class="sources-head" role="button" tabindex="0">' + ICON_CHEV + '<span>参考来源 · ' + list.length + '</span></div>'
+    + '<div class="source-grid">' + list.map(sourceCardHtml).join('') + '</div>'
+    + '</div>';
+}
+
+/* ---------- 渲染界面 ---------- */
+function renderList(){
+  const list = $('convList'); list.innerHTML = '';
+  const convIds = getAllConvIds();
+  convIds.forEach(cid=>{
+    const title = state.titleMap[cid] || "未命名对话";
+    const item = document.createElement('div');
+    item.className = 'conv-item' + (cid === state.activeConvId ? ' active' : '');
+    item.innerHTML = `
+      <span class="conv-title">${esc(title)}</span>
+      <span class="conv-actions">
+        <button class="icon-btn" data-act="rename" title="重命名">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 3a2.83 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" /></svg>
+        </button>
+        <button class="icon-btn" data-act="del" title="删除">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M8 6V4a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2m3 0v14a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V6" /></svg>
+        </button>
+      </span>`;
+    item.addEventListener('click', e=>{
+      const act = e.target.closest('[data-act]')?.dataset.act;
+      if(act === 'del'){ deleteConversation(cid); return; }
+      if(act === 'rename'){ renameConversation(cid); return; }
+      selectConversation(cid);
+    });
+    list.appendChild(item);
+  });
+}
+
+function errorHint(msg){
+  const s = String(msg || '');
+  if(/deepseek_web_search|deepseek_read_url|web_search|tools/i.test(s)){
+    return '联网搜索由 DeepSeek 服务端提供。请确认 Base URL 为官方地址 https://api.deepseek.com、模型为 deepseek-flash；第三方网关通常不支持，可先关闭联网搜索再试。';
+  }
+  if(/\b401\b|unauthorized|invalid.*key|api key/i.test(s)){
+    return '请检查 API Key 是否正确、是否已过期。';
+  }
+  if(/\b429\b|rate limit/i.test(s)){
+    return '请求过于频繁或额度不足，请稍后再试。';
+  }
+  if(/failed to fetch|networkerror|load failed/i.test(s)){
+    return '无法连接接口。请检查网络、Base URL，以及该地址是否允许浏览器跨域请求。';
+  }
+  return '';
+}
+
+function bubbleHtml(record){
+  let html = '';
+  if(record.role === 'assistant'){
+    if(record.content) html += renderAssistantHtml(record);
+    if(record.error){
+      html += (html ? '<div style="height:8px"></div>' : '')
+        + '<div class="err">请求失败：' + esc(record.error) + '</div>';
+      const hint = errorHint(record.error);
+      if(hint) html += '<div class="err-hint">' + esc(hint) + '</div>';
+    }
+    if(!html) html = '<span class="muted">（无内容）</span>';
+  }else{
+    html = esc(record.content || '');
+  }
+  return html;
+}
+
+function buildMsgEl(record){
+  const el = document.createElement('div');
+  el.className = 'msg ' + record.role;
+  el.dataset.recordId = record.recordId;
+  if(record.role === 'user'){
+    el.innerHTML = `
+      <div class="avatar">我</div>
+      <div class="body">
+        <div class="meta">你</div>
+        <div class="bubble">${bubbleHtml(record)}</div>
+      </div>`;
+  }else{
+    const badge = record.searched ? '<span class="net-badge">' + ICON_GLOBE + '联网</span>' : '';
+    el.innerHTML = `
+      <div class="avatar">AI</div>
+      <div class="body">
+        <div class="meta">DeepSeek${badge}</div>
+        <div class="trace-slot">${traceHtml(record)}</div>
+        <div class="bubble">${bubbleHtml(record)}</div>
+        <div class="sources-slot">${sourcesHtml(record)}</div>
+      </div>`;
+  }
+  return el;
+}
+
+function renderMessages(){
+  const box = $('messages'); box.innerHTML = '';
+  const cid = state.activeConvId;
+  $('chatTitle').textContent = cid ? (state.titleMap[cid]||"未命名对话") : "未选择对话";
+  if(!cid){
+    box.innerHTML = `<div class="empty"><h2>开始新的对话</h2><p>点击新建对话开始。</p></div>`;
+    return;
+  }
+  const msgs = getConvRecords(cid);
+  if(msgs.length === 0){
+    box.innerHTML = `<div class="empty"><h2>开始新的对话</h2><p>在下方输入消息；需要最新信息时，点开「联网搜索」。</p></div>`;
+    return;
+  }
+  msgs.forEach(r=>box.appendChild(buildMsgEl(r)));
+  box.scrollTop = box.scrollHeight;
+  state.atBottom = true;
+}
+
+/* 流式过程中局部刷新轨迹与来源，不重建整条消息 */
+function refreshStreamChrome(stream, record){
+  if(!stream) return;
+  if(stream.traceSlot) stream.traceSlot.innerHTML = traceHtml(record, true);
+  if(stream.sourcesSlot) stream.sourcesSlot.innerHTML = sourcesHtml(record);
+}
+
+function schedulePaint(stream){
+  if(!stream || stream.paintScheduled) return;
+  stream.paintScheduled = true;
+  const run = ()=>{
+    stream.paintScheduled = false;
+    if(!stream.bubble || !stream.bubble.isConnected) return;
+    stream.bubble.innerHTML = renderMd(stream.record.content || '');
+    if(state.atBottom) $('messages').scrollTop = $('messages').scrollHeight;
+  };
+  if(typeof requestAnimationFrame === 'function') requestAnimationFrame(run);
+  else setTimeout(run, 16);
+}
+
+/* ---------- 联网搜索开关 ---------- */
+function modelSupportsSearch(){
+  return state.settings.model === 'deepseek-flash';
+}
+
+function syncSearchUI(){
+  const on = !!state.settings.webSearch;
+  const btn = $('btnWebSearch');
+  btn.classList.toggle('on', on);
+  btn.setAttribute('aria-pressed', on ? 'true' : 'false');
+  btn.title = on
+    ? '联网搜索已开启（' + (state.settings.searchMode === 'deep' ? '深度' : '快速') + '）· 点击关闭'
+    : '联网搜索已关闭 · 点击开启（由 DeepSeek 服务端检索并附引用）';
+  $('searchMode').value = state.settings.searchMode;
+  $('searchMode').disabled = !on;
+  $('searchWarn').hidden = !(on && !modelSupportsSearch());
+  $('composerCard').classList.toggle('net-on', on);
+}
+
+/* ---------- API发送消息 ---------- */
+function apiUrl(){
+  return state.settings.baseUrl.replace(/\/+$/,'') + '/chat/completions';
+}
+
+function ensureStep(record, index){
+  record.server_tool_calls = Array.isArray(record.server_tool_calls) ? record.server_tool_calls : [];
+  let step = record.server_tool_calls.find(s=>s && s.index === index);
+  if(!step){
+    step = { index:index, reasoning_content:'', calls:[] };
+    record.server_tool_calls.push(step);
+    record.server_tool_calls.sort((a,b)=>Number(a.index)-Number(b.index));
+  }
+  if(!Array.isArray(step.calls)) step.calls = [];
+  return step;
+}
+
+function mergeSources(record, list){
+  if(!Array.isArray(list) || !list.length) return;
+  record.sources = Array.isArray(record.sources) ? record.sources : [];
+  const map = new Map(record.sources.filter(s=>s && s.url).map(s=>[s.url, s]));
+  list.forEach(s=>{
+    if(!s || !s.url) return;
+    const prev = map.get(s.url) || {};
+    const merged = Object.assign({}, prev, s);
+    if(!merged.title && prev.title) merged.title = prev.title;
+    if(!merged.snippet && prev.snippet) merged.snippet = prev.snippet;
+    if(!merged.site_name && prev.site_name) merged.site_name = prev.site_name;
+    map.set(s.url, merged);
+  });
+  record.sources = [...map.values()];
+}
+
+function collectCallSources(record, call){
+  if(!call) return;
+  if(Array.isArray(call.sources)) mergeSources(record, call.sources);
+  // 阅读用户给出的链接才算来源；深度检索里 open_page 打开的网页只显示在轨迹中
+  if(call.action && call.action.type === 'read_link' && call.page && call.page.url){
+    mergeSources(record, [{
+      url: call.page.url,
+      title: call.page.title || '',
+      published_at: call.page.published_at || null,
+      site_name: hostOf(call.page.url)
+    }]);
+  }
+}
+
+function applyToolEvent(record, ev, stream){
+  if(!ev || !ev.type) return;
+  if(ev.type === 'step_reasoning_done') return;
+  if(ev.type === 'call_started'){
+    const step = ensureStep(record, Number.isFinite(ev.step) ? ev.step : 0);
+    if(ev.call){
+      if(ev.call.id && step.calls.some(c=>c && c.id === ev.call.id)) return;
+      step.calls.push(Object.assign({ status:'running' }, ev.call));
+      if(ev.call.action && ev.call.action.type === 'search') setStatus('正在搜索网页…');
+      else setStatus('正在打开网页…');
+    }
+    refreshStreamChrome(stream, record);
+    return;
+  }
+  if(ev.type === 'call_completed'){
+    const step = ensureStep(record, Number.isFinite(ev.step) ? ev.step : 0);
+    const incoming = ev.call || {};
+    let target = incoming.id ? step.calls.find(c=>c && c.id === incoming.id) : null;
+    if(target) Object.assign(target, incoming);
+    else step.calls.push(Object.assign({}, incoming));
+    collectCallSources(record, incoming);
+    refreshStreamChrome(stream, record);
+  }
+}
+
+function handleChatChunk(json, record, stream){
+  if(json && json.error){
+    throw new Error((json.error && json.error.message) || '服务端返回错误');
+  }
+  if(json && json.usage) record.usage = json.usage;
+  const choices = json && json.choices;
+  if(!Array.isArray(choices) || !choices.length) return;
+  const choice = choices[0] || {};
+  const delta = choice.delta || {};
+
+  const ev = choice.server_tool_event || delta.server_tool_event;
+  if(ev) applyToolEvent(record, ev, stream);
+
+  if(delta.reasoning_content){
+    if(record.status === 'running' && !record.content){
+      setStatus(record.searchMode === 'deep' && record.searched ? '深度思考中…' : '思考中…');
+    }
+  }
+  if(typeof delta.content === 'string' && delta.content){
+    record.content = (record.content || '') + delta.content;
+    setStatus('生成回答中…');
+    schedulePaint(stream);
+  }
+  if(delta.server_tool_calls) record.server_tool_calls = delta.server_tool_calls;
+  if(Array.isArray(delta.annotations)) record.annotations = delta.annotations;
+  if(choice.finish_reason) record.finish_reason = choice.finish_reason;
+}
+
+function finalizeReply(record, stream, opts){
+  opts = opts || {};
+  const calls = flattenCalls(record.server_tool_calls);
+  calls.forEach(c=>{
+    if(c.status === 'running'){
+      c.status = 'failed';
+      c.error = c.error || { code: opts.aborted ? 'aborted' : 'unavailable' };
+    }
+    collectCallSources(record, c);
+  });
+  record.annotations = normaliseAnnotations(record.annotations);
+  if(record.finish_reason === 'content_filter' && !record.content){
+    record.refused = true;
+    record.content = '（内容未通过安全审核，未生成回答）';
+  }
+  record.sources = buildSourceList(record).map(s=>{
+    const copy = Object.assign({}, s);
+    delete copy.citeNum;
+    return copy;
+  });
+  record.status = opts.aborted ? 'stopped' : (opts.error ? 'error' : 'done');
+  saveRecords();
+
+  const box = $('messages');
+  const stick = state.atBottom;
+  if(stream && stream.msgEl && stream.msgEl.isConnected){
+    stream.msgEl.replaceWith(buildMsgEl(record));
+    if(stick) box.scrollTop = box.scrollHeight;
+  }
+  state.sending = false;
+  state.abort = null;
+  state.stream = null;
+  setSendingUI(false);
+  setStatus('');
+  renderList();
+}
+
+async function sendMessage(){
+  const convId = state.activeConvId;
+  if(!convId){ toast('请先新建或选择对话'); return; }
+  const input = $('input');
+  const text = input.value.trim();
+  if(!text || state.sending) return;
+  if(!state.settings.apiKey){
+    openSettings(); toast('请先填写 API Key');
+    return;
+  }
+
+  const useSearch = !!state.settings.webSearch;
+  const mode = state.settings.searchMode === 'deep' ? 'deep' : 'quick';
+
+  addRecord(convId, 'user', text);
+  autoTitle(convId, text).catch(()=>{});
+  const assistantRec = addRecord(convId, 'assistant', '', {
+    searched: useSearch,
+    searchMode: mode,
+    status: 'running',
+    sources: [],
+    annotations: [],
+    server_tool_calls: []
+  });
+
+  input.value = '';
+  autoGrow(input);
+  state.sending = true;
+  state.abort = new AbortController();
+  state.atBottom = true;
+  setSendingUI(true);
+  setStatus(useSearch ? (mode === 'deep' ? '深度思考并联网…' : '联网搜索中…') : '思考中…');
+  renderList();
+  renderMessages();
+
+  const box = $('messages');
+  const msgEl = box.querySelector('.msg[data-record-id="' + assistantRec.recordId + '"]');
+  const stream = {
+    record: assistantRec,
+    msgEl: msgEl,
+    bubble: msgEl ? msgEl.querySelector('.bubble') : null,
+    traceSlot: msgEl ? msgEl.querySelector('.trace-slot') : null,
+    sourcesSlot: msgEl ? msgEl.querySelector('.sources-slot') : null,
+    paintScheduled: false
+  };
+  state.stream = stream;
+  if(stream.bubble){
+    stream.bubble.classList.add('cursor');
+    stream.bubble.innerHTML = '';
+  }
+  refreshStreamChrome(stream, assistantRec);
+
+  const payload = {
+    model: state.settings.model,
+    messages: buildApiMessages(convId, assistantRec.recordId),
+    stream: true
+  };
+  if(useSearch){
+    payload.tools = [{ type: SEARCH_TOOL }, { type: READ_TOOL }];
+    // 快速：关闭思考，由模型直接搜索作答；深度：边思考边多步检索
+    payload.thinking = { type: mode === 'deep' ? 'enabled' : 'disabled' };
+  }else{
+    payload.temperature = 0.7;
+  }
+
+  let aborted = false;
+  try{
+    const resp = await fetch(apiUrl(), {
+      method:'POST',
+      headers:{
+        'Content-Type':'application/json',
+        'Authorization':'Bearer ' + state.settings.apiKey
+      },
+      body: JSON.stringify(payload),
+      signal: state.abort.signal
+    });
+    if(!resp.ok){
+      const raw = await resp.text().catch(()=> '');
+      let detail = raw.slice(0, 300);
+      try{
+        const j = JSON.parse(raw);
+        detail = (j.error && j.error.message) || j.message || detail;
+      }catch(e){/* keep raw */}
+      const err = new Error('HTTP ' + resp.status + (detail ? '：' + detail : ''));
+      err.status = resp.status;
+      throw err;
+    }
+    if(!resp.body) throw new Error('响应流不可用');
+
+    const reader = resp.body.getReader();
+    const decoder = new TextDecoder('utf-8');
+    let buffer = '';
+    let sseDone = false;
+    const consume = line=>{
+      const trimmed = line.replace(/\r$/, '');
+      if(!trimmed.startsWith('data:')) return;
+      const data = trimmed.slice(5).trim();
+      if(!data) return;
+      if(data === '[DONE]'){ sseDone = true; return; }
+      let json;
+      try{ json = JSON.parse(data); }
+      catch(e){ return; } // 分片解析失败时忽略
+      handleChatChunk(json, assistantRec, stream);
+    };
+
+    while(true){
+      const { done, value } = await reader.read();
+      if(done) break;
+      buffer += decoder.decode(value, { stream:true });
+      let nl;
+      while((nl = buffer.indexOf('\n')) >= 0){
+        consume(buffer.slice(0, nl));
+        buffer = buffer.slice(nl + 1);
+      }
+      if(sseDone) break;
+    }
+    if(buffer.trim()) consume(buffer);
+    if(!assistantRec.content) assistantRec.content = '（空响应）';
+    if(assistantRec.finish_reason === 'length'){
+      assistantRec.content += '\n\n（回答因长度限制被截断）';
+    }
+    finalizeReply(assistantRec, stream, {});
+  }catch(err){
+    if(err && err.name === 'AbortError'){
+      aborted = true;
+      if(!assistantRec.content) assistantRec.content = '（已停止）';
+      finalizeReply(assistantRec, stream, { aborted:true });
+      toast('已停止生成');
+    }else{
+      const msg = String((err && err.message) || err).replace(/\s+/g, ' ').slice(0, 400);
+      assistantRec.error = msg;
+      if(!assistantRec.content) assistantRec.content = '';
+      finalizeReply(assistantRec, stream, { error: err });
+      toast('请求失败，见对话内提示');
+    }
+  }finally{
+    if(state.sending){
+      state.sending = false;
+      state.abort = null;
+      state.stream = null;
+      setSendingUI(false);
+    }
+  }
+}
+
+function setSendingUI(on){
+  const btn = $('btnSend');
+  btn.classList.toggle('stop', on);
+  btn.title = on ? '停止生成' : '发送';
+  btn.innerHTML = on
+    ? '<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="6" width="12" height="12" rx="2.5"/></svg>'
+    : '<svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 2 11 13M22 2l-7 20-4-9-9-4 20-7z"/></svg>';
+  btn.disabled = false;
+  $('input').disabled = on;
+}
+
+/* ---------- Gist云同步 + ETag乐观锁 + 兼容两种token ---------- */
+function gistHeaders(ifMatchEtag=null){
+  const auth = buildAuthHeader(state.settings.gistToken);
+  const hd = {
+    'Content-Type':'application/json',
+    'Accept':'application/vnd.github+json',
+    ...auth
+  };
+  if(ifMatchEtag) hd['If-Match'] = ifMatchEtag;
+  return hd;
+}
+function convPayload(){
+  return JSON.stringify({
+    exportedAt: new Date().toISOString(),
+    titleMap: state.titleMap,
+    titleManual: state.titleManual,
+    records: state.records
+  }, null, 2);
+}
+
+async function pushCloud(retryCount=0){
+  if(!state.settings.syncEnabled || !state.settings.gistToken) return;
+  if(state.syncBusy) return;
+  if(retryCount>3){
+    setSyncStatus('推送多次冲突失败，请手动拉取后重试');
+    return;
+  }
+  state.syncBusy = true;
+  setSyncStatus('云同步中…');
+  try{
+    const content = convPayload();
+    let gistId = state.settings.gistId;
+    let resp;
+    if(!gistId){
+      resp = await fetch('https://api.github.com/gists', {
+        method:'POST', headers: gistHeaders(),
+        body: JSON.stringify({ description:'DeepSeek chat backup', public:false, files:{ [GIST_FILENAME]:{ content } } })
+      });
+    }else{
+      const etag = getLocalEtag();
+      resp = await fetch('https://api.github.com/gists/' + gistId, {
+        method:'PATCH', headers: gistHeaders(etag),
+        body: JSON.stringify({ files:{ [GIST_FILENAME]:{ content } } })
+      });
+      // 冲突412：远端版本已经变化
+      if(resp.status === 412){
+        setSyncStatus('检测云端更新，重新合并…');
+        state.syncBusy = false;
+        await pullCloud();
+        return pushCloud(retryCount+1);
+      }
+    }
+    if(!resp.ok) throw new Error('HTTP ' + resp.status);
+    const data = await resp.json();
+    const newEtag = resp.headers.get('ETag');
+    cacheLocalEtag(newEtag);
+
+    if(!gistId && data.id){
+      state.settings.gistId = data.id;
+      saveSettings();
+    }
+    setSyncStatus('已同步到云端');
+  }catch(err){
+    setSyncStatus('云端同步失败：' + err.message);
+  }finally{
+    state.syncBusy = false;
+  }
+}
+
+async function pullCloud(){
+  if(!state.settings.syncEnabled || !state.settings.gistToken || !state.settings.gistId) return;
+  if(state.syncBusy) return;
+  state.syncBusy = true;
+  setSyncStatus('从云端拉取…');
+  try{
+    const resp = await fetch('https://api.github.com/gists/' + state.settings.gistId, {
+      method:'GET', headers: gistHeaders()
+    });
+    if(!resp.ok) throw new Error('HTTP ' + resp.status);
+    const newEtag = resp.headers.get('ETag');
+    cacheLocalEtag(newEtag);
+
+    const data = await resp.json();
+    const file = data.files && data.files[GIST_FILENAME];
+    if(!file || !file.content) throw new Error('云端备份不存在');
+    const remote = JSON.parse(file.content);
+    state.titleMap = Object.assign({}, state.titleMap, remote.titleMap||{});
+    state.titleManual = Object.assign({}, state.titleManual, remote.titleManual||{});
+    saveTitleManual();
+    const localRecMap = new Map(state.records.map(r=>[r.recordId, r]));
+    (remote.records||[]).forEach(r=>{
+      if(r.recordId) localRecMap.set(r.recordId, r);
+    });
+    state.records = [...localRecMap.values()];
+    saveTitleMap(); saveRecords();
+    renderList(); renderMessages();
+    setSyncStatus('已从云端拉取');
+  }catch(err){
+    setSyncStatus('云端拉取失败：' + err.message);
+  }finally{
+    state.syncBusy = false;
+  }
+}
+
+function scheduleCloudPush(){
+  clearTimeout(state.syncTimer);
+  state.syncTimer = setTimeout(pushCloud, 3000);
+}
+function setSyncStatus(text){ $('statusText').textContent = text||''; }
+
+/* ---------- 设置弹窗 ---------- */
+function openSettings(){
+  $('apiKeyInput').value = state.settings.apiKey;
+  $('baseUrlInput').value = state.settings.baseUrl;
+  $('settingsModel').value = state.settings.model;
+  $('smartTitleEnabled').checked = state.settings.smartTitle !== false;
+  $('syncEnabled').checked = !!state.settings.syncEnabled;
+  $('gistTokenInput').value = state.settings.gistToken;
+  $('gistIdInput').value = state.settings.gistId;
+  $('settingsOverlay').classList.add('show');
+}
+function closeSettings(){ $('settingsOverlay').classList.remove('show'); }
+$('btnSettings').addEventListener('click', openSettings);
+$('btnCloseSettings').addEventListener('click', closeSettings);
+$('btnSaveSettings').addEventListener('click', () => {
+  state.settings.apiKey = $('apiKeyInput').value.trim();
+  state.settings.baseUrl = $('baseUrlInput').value.trim() || 'https://api.deepseek.com';
+  state.settings.model = $('settingsModel').value;
+  state.settings.smartTitle = $('smartTitleEnabled').checked;
+  state.settings.syncEnabled = $('syncEnabled').checked;
+  state.settings.gistToken = $('gistTokenInput').value.trim();
+  state.settings.gistId = $('gistIdInput').value.trim();
+  saveSettings();
+  $('modelSelect').value = state.settings.model;
+  syncSearchUI();
+  closeSettings();
+  toast('设置已保存');
+  if(state.settings.syncEnabled && state.settings.gistToken){
+    pushCloud();
+  }else{
+    setSyncStatus('本地模式');
+  }
+});
+$('btnPushCloud').addEventListener('click', async () => {
+  state.settings.gistToken = $('gistTokenInput').value.trim();
+  state.settings.gistId = $('gistIdInput').value.trim();
+  state.settings.syncEnabled = $('syncEnabled').checked;
+  saveSettings();
+  await pushCloud();
+  if(state.settings.gistId) $('gistIdInput').value = state.settings.gistId;
+});
+$('btnPullCloud').addEventListener('click', pullCloud);
+$('btnClearKey').addEventListener('click', () => {
+  state.settings.apiKey = ''; saveSettings();
+  $('apiKeyInput').value = ''; toast('Key 已清除');
+});
+$('modelSelect').addEventListener('change', e=>{
+  state.settings.model = e.target.value; saveSettings();
+  syncSearchUI();
+});
+$('btnRetitleAll').addEventListener('click', ()=>{
+  const n = tidyAllTitles();
+  toast(n ? '已整理 ' + n + ' 个对话标题' : '没有需要整理的对话标题');
+});
+
+/* ---------- 联网开关事件 ---------- */
+$('btnWebSearch').addEventListener('click', ()=>{
+  state.settings.webSearch = !state.settings.webSearch;
+  saveSettings();
+  syncSearchUI();
+  toast(state.settings.webSearch
+    ? '联网搜索已开启 · ' + (state.settings.searchMode === 'deep' ? '深度检索' : '快速搜索')
+    : '联网搜索已关闭');
+});
+$('searchMode').addEventListener('change', e=>{
+  state.settings.searchMode = e.target.value === 'deep' ? 'deep' : 'quick';
+  saveSettings();
+  syncSearchUI();
+  toast(state.settings.searchMode === 'deep' ? '联网方式：深度检索（边思考边搜索）' : '联网方式：快速搜索');
+});
+
+/* ---------- 消息内展开/收起 ---------- */
+$('messages').addEventListener('click', e=>{
+  const traceHead = e.target.closest('.trace-head');
+  if(traceHead && traceHead.parentElement){
+    traceHead.parentElement.classList.toggle('open');
+    return;
+  }
+  const sourcesHead = e.target.closest('.sources-head');
+  if(sourcesHead && sourcesHead.parentElement){
+    sourcesHead.parentElement.classList.toggle('collapsed');
+  }
+});
+$('messages').addEventListener('keydown', e=>{
+  if(e.key !== 'Enter' && e.key !== ' ') return;
+  const head = e.target.closest('.trace-head, .sources-head');
+  if(head){ e.preventDefault(); head.click(); }
+});
+$('messages').addEventListener('scroll', ()=>{
+  state.atBottom = isNearBottom($('messages'));
+});
+
+// 流式未结束时关闭页面：把进行中的回复标记为已中断，避免下次打开残留“正在搜索”
+window.addEventListener('beforeunload', ()=>{
+  let changed = false;
+  state.records.forEach(r=>{
+    if(r.role === 'assistant' && r.status === 'running'){
+      r.status = 'stopped';
+      if(!r.content) r.content = '（页面关闭，已中断）';
+      (r.server_tool_calls || []).forEach(step=>{
+        (step.calls || []).forEach(c=>{
+          if(c.status === 'running'){
+            c.status = 'failed';
+            c.error = c.error || { code: 'aborted' };
+          }
+        });
+      });
+      changed = true;
+    }
+  });
+  if(changed){
+    try{ localStorage.setItem(LS_RECORDS, JSON.stringify(state.records)); }catch(e){}
+  }
+});
+
+/* ---------- 导出导入备份 ---------- */
+$('btnExport').addEventListener('click', ()=>{
+  const data = {
+    exportedAt: new Date().toISOString(),
+    settings:{...state.settings, apiKey:''},
+    titleMap: state.titleMap,
+    titleManual: state.titleManual,
+    records: state.records
+  };
+  const blob = new Blob([JSON.stringify(data,null,2)], {type:'application/json'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'deepseek-chat-backup.json';
+  a.click();
+  URL.revokeObjectURL(a.href);
+  toast('已导出备份（不含API Key）');
+});
+$('btnImport').addEventListener('click', ()=>$('fileInput').click());
+$('fileInput').addEventListener('change', async e=>{
+  const file = e.target.files[0];
+  if(!file) return;
+  try{
+    const data = JSON.parse(await file.text());
+    if(data.titleMap && data.records){
+      state.titleMap = Object.assign({}, state.titleMap, data.titleMap);
+      if(data.titleManual) state.titleManual = Object.assign({}, state.titleManual, data.titleManual);
+      saveTitleManual();
+      const localRecMap = new Map(state.records.map(r=>[r.recordId, r]));
+      (data.records||[]).forEach(r=>{ if(r.recordId) localRecMap.set(r.recordId, r); });
+      state.records = [...localRecMap.values()];
+      saveTitleMap(); saveRecords();
+      renderList(); renderMessages();
+      toast('导入完成');
+    }else{
+      toast('备份格式不正确');
+    }
+  }catch(err){ toast('导入失败：'+err.message); }
+  e.target.value = '';
+});
+
+/* ---------- UI事件绑定 ---------- */
+$('btnNew').addEventListener('click', newConversation);
+$('btnSend').addEventListener('click', ()=>{
+  if(state.sending){
+    if(state.abort) state.abort.abort();
+  }else{
+    sendMessage();
+  }
+});
+$('input').addEventListener('keydown', e=>{
+  if(e.key === 'Enter' && !e.shiftKey && !e.isComposing){
+    e.preventDefault();
+    if(!state.sending) sendMessage();
+  }
+});
+$('input').addEventListener('input', e=>autoGrow(e.target));
+$('btnMenu').addEventListener('click', ()=>$('sidebar').classList.toggle('open'));
+document.addEventListener('click', e=>{
+  if(window.innerWidth <=720 && !e.target.closest('#sidebar') && !e.target.closest('#btnMenu')){
+    $('sidebar').classList.remove('open');
+  }
+});
+
+/* ---------- 程序启动 ---------- */
+load();
+$('modelSelect').value = state.settings.model;
+syncSearchUI();
+autoGrow($('input'));
+const allConv = getAllConvIds();
+if(allConv.length === 0){
+  newConversation();
+}else{
+  state.activeConvId = allConv[0];
+}
+renderList(); renderMessages();
+if(state.settings.syncEnabled && state.settings.gistToken && state.settings.gistId){
+  pullCloud();
+}else{
+  setSyncStatus(state.settings.syncEnabled ? '等待填写云同步凭证' : '本地模式');
+}
+if(!state.settings.apiKey){
+  setTimeout(openSettings, 300);
+}
+</script>
+</body>
+</html>
