@@ -22,14 +22,7 @@ API Key 仅保存在本机浏览器 localStorage，不会上传到其他服务�
 云同步（GitHub 私有 Gist）
 支持 Classic 与 Fine-grained Token；Fine-grained 需授予 Gists → Read and write 权限。
 Gist ID 留空时，首次保存会自动新建一个私有 Gist；填写同一 Gist ID 可在多台设备间共享历史。
-⚠️ 当前同步机制尚未完善：可能存在上传/拉取失败、多端冲突、历史覆盖等问题。请勿将 Gist ID 和 Token 分享给他人，并建议定期手动备份重要对话。
-已知限制
-联网搜索仅在使用 deepseek-flash 且连接官方接口时可用。
-图片输入需要模型与接口支持视觉格式。
-PDF / Word / Excel / 压缩包等二进制文件暂不支持上传。
-Gist 同步尚未完善（见上方声明）。
-贡献
+
 欢迎提交 Issue 和 PR。当前最需要帮助的方向包括：
 
-完善 Gist 同步机制：处理多端冲突、失败重试、增量同步等。
-其他改进：UI/UX、分支树交互、错误处理等。
+PDF
