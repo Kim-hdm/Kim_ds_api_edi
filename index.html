@@ -788,7 +788,7 @@
       <div class="attach-strip" id="attachStrip" hidden></div>
       <textarea id="input" rows="1" placeholder="给 DeepSeek 发消息…"></textarea>
       <div class="composer-bar">
-        <button class="tool-btn" id="btnFile" type="button" title="上传文件（Word / Excel / PowerPoint、OpenDocument、RTF、EPUB、文本与代码等，可拖入）">
+        <button class="tool-btn" id="btnFile" type="button" title="上传文件（Word / Excel / PowerPoint / PDF、OpenDocument、RTF、EPUB、文本与代码等，可拖入）">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8Z" /><path d="M14 3v5h5" /><path d="M9 13h6M9 17h4" /></svg>
         </button>
         <button class="tool-btn" id="btnImage" type="button" title="上传图片（也支持粘贴 / 拖入图片文件）">
@@ -835,7 +835,7 @@
       </select>
       <div class="hint">联网搜索使用 DeepSeek 服务端工具 <code>deepseek_web_search</code>，需选择 deepseek-flash 并连接官方接口；第三方网关可能不支持。</div>
       <div class="hint">图片会先在本地压缩（最长边 1280px、JPEG），再以 OpenAI 视觉格式 <code>image_url</code>（data URL）随消息发送；需要模型与接口支持图片输入。</div>
-      <div class="hint">文件上传支持 txt / md / json / csv / 代码等文本类文件，以及 Word（doc/docx）、Excel（xls/xlsx）、PowerPoint（ppt/pptx）、OpenDocument（odt/ods/odp/odg）、RTF、EPUB 文档。Office 文档会在浏览器本地提取纯文字（正文、表格、幻灯片、备注、页眉页脚）后再随消息发送，原文件不会上传到别处；PDF、压缩包和设置了打开密码的文档暂不支持。</div>
+      <div class="hint">文件上传支持 txt / md / json / csv / 代码等文本类文件，以及 Word（doc/docx）、Excel（xls/xlsx）、PowerPoint（ppt/pptx）、PDF、OpenDocument（odt/ods/odp/odg）、RTF、EPUB 文档。Office / PDF 会在浏览器本地提取纯文字（PDF 为文字层），原文件不会上传到别处。扫描版 PDF 优先本地提取页面图片；少数特殊压缩格式会先询问是否联网加载免费开源的 pdf.js 渲染页面（只下载代码，PDF 不上传），确认后图片随消息发给模型看图，会消耗图片 token。压缩包和设置了打开密码的文档暂不支持。</div>
     </div>
     <div class="field">
       <label style="display:flex;align-items:center;gap:8px">
@@ -921,7 +921,7 @@
 </div>
 <input type="file" id="fileInput" accept="application/json" hidden>
 <input type="file" id="imageInput" accept="image/*" multiple hidden>
-<input type="file" id="docInput" multiple hidden accept=".txt,.text,.md,.markdown,.mdx,.json,.jsonl,.ndjson,.ipynb,.html,.htm,.xhtml,.css,.scss,.sass,.less,.js,.mjs,.cjs,.jsx,.ts,.tsx,.vue,.svelte,.py,.java,.kt,.kts,.c,.h,.hpp,.hh,.cpp,.cc,.cxx,.cs,.go,.rs,.php,.rb,.sh,.bash,.zsh,.fish,.ps1,.bat,.cmd,.sql,.xml,.svg,.yaml,.yml,.toml,.ini,.cfg,.conf,.config,.properties,.env,.csv,.tsv,.log,.tex,.r,.m,.mm,.swift,.lua,.pl,.pm,.gradle,.dockerfile,.gitignore,.editorconfig,.plist,.njk,.hbs,.ejs,.twig,.liquid,.doc,.docx,.docm,.dot,.dotx,.xls,.xlsx,.xlsm,.xlt,.xltx,.ppt,.pptx,.pptm,.pps,.ppsx,.pot,.potx,.odt,.ods,.odp,.odg,.rtf,.epub,text/*,application/json,application/xml,application/xhtml+xml,application/javascript,application/typescript,application/x-yaml,application/x-sh,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-powerpoint,application/vnd.openxmlformats-officedocument.presentationml.presentation,application/vnd.oasis.opendocument.text,application/vnd.oasis.opendocument.spreadsheet,application/vnd.oasis.opendocument.presentation,application/rtf,application/epub+zip">
+<input type="file" id="docInput" multiple hidden accept=".txt,.text,.md,.markdown,.mdx,.json,.jsonl,.ndjson,.ipynb,.html,.htm,.xhtml,.css,.scss,.sass,.less,.js,.mjs,.cjs,.jsx,.ts,.tsx,.vue,.svelte,.py,.java,.kt,.kts,.c,.h,.hpp,.hh,.cpp,.cc,.cxx,.cs,.go,.rs,.php,.rb,.sh,.bash,.zsh,.fish,.ps1,.bat,.cmd,.sql,.xml,.svg,.yaml,.yml,.toml,.ini,.cfg,.conf,.config,.properties,.env,.csv,.tsv,.log,.tex,.r,.m,.mm,.swift,.lua,.pl,.pm,.gradle,.dockerfile,.gitignore,.editorconfig,.plist,.njk,.hbs,.ejs,.twig,.liquid,.doc,.docx,.docm,.dot,.dotx,.xls,.xlsx,.xlsm,.xlt,.xltx,.ppt,.pptx,.pptm,.pps,.ppsx,.pot,.potx,.odt,.ods,.odp,.odg,.rtf,.epub,.pdf,text/*,application/json,application/xml,application/xhtml+xml,application/javascript,application/typescript,application/x-yaml,application/x-sh,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-powerpoint,application/vnd.openxmlformats-officedocument.presentationml.presentation,application/vnd.oasis.opendocument.text,application/vnd.oasis.opendocument.spreadsheet,application/vnd.oasis.opendocument.presentation,application/rtf,application/epub+zip,application/pdf">
 <input type="file" id="editDocInput" multiple hidden>
 <input type="file" id="editImageInput" hidden accept="image/*">
 <!-- ===== 通用确认 / 密码弹窗 ===== -->
@@ -6414,7 +6414,7 @@ function fmtSize(n){
 }
 
 /* ---------- 文本 / 代码 / 数据文件附件 ---------- */
-const FILE_BINARY_EXT = /\.(?:pdf|zip|rar|7z|gz|tgz|bz2|xz|tar|exe|dll|so|dylib|bin|dat|db|sqlite3?|mp3|mp4|m4a|mov|avi|wmv|wav|flac|ogg|webm|mkv|ttf|otf|woff2?|eot|psd|ai|eps|dmg|iso|jar|class|pyc|apk|ipa|heic|heif|raw|cr2|nef|wasm|parquet|avro|orc|xlsb|vsd|vsdx|pub|one|msg|eml|mht)$/i;
+const FILE_BINARY_EXT = /\.(?:zip|rar|7z|gz|tgz|bz2|xz|tar|exe|dll|so|dylib|bin|dat|db|sqlite3?|mp3|mp4|m4a|mov|avi|wmv|wav|flac|ogg|webm|mkv|ttf|otf|woff2?|eot|psd|ai|eps|dmg|iso|jar|class|pyc|apk|ipa|heic|heif|raw|cr2|nef|wasm|parquet|avro|orc|xlsb|vsd|vsdx|pub|one|msg|eml|mht)$/i;
 const FILE_LANG = {
   js:'javascript', mjs:'javascript', cjs:'javascript', jsx:'jsx',
   ts:'typescript', tsx:'tsx', py:'python', rb:'ruby', php:'php',
@@ -6498,12 +6498,13 @@ async function readTextFile(file){
 /* ===== [DOC-EXTRACT] BEGIN ===== */
 /* ============================================================
  * 二进制办公文档读取：在浏览器本地把 Office / OpenDocument /
- * RTF / EPUB 等文件解析成纯文本，再随消息发给模型。
+ * PDF / RTF / EPUB 等文件解析成纯文本，再随消息发给模型。
  *   - OOXML：docx/docm/dotx、xlsx/xlsm/xltx、pptx/pptm/ppsx（ZIP + XML）
  *   - ODF  ：odt/ods/odp/odg（ZIP + content.xml）
  *   - 旧版 Office：doc / xls / ppt（OLE 复合文档，即 97-2003 二进制格式）
+ *   - PDF  ：文字层提取；扫描件可提取整页图片（不需要联网）
  *   - 其它：rtf、epub，以及个别把 .doc/.xls/.ppt 另存成 HTML 的文件
- * 全程不联网、不依赖第三方库；只提取文字，不保留版式与图片。
+ * 全程不联网、不依赖第三方库；只提取文字/页面图片，不保留复杂版式。
  * 支持的 ZIP 解压：优先用浏览器 DecompressionStream('deflate-raw')，
  * 不支持时退回内置的 JS inflate 实现。
  * ============================================================ */
@@ -6524,7 +6525,8 @@ const DOC_KIND_META = {
   odg:{ label:'OpenDocument 图形' },
   rtf:{ label:'RTF 富文本' },
   epub:{ label:'EPUB 电子书' },
-  html:{ label:'HTML 文档' }
+  html:{ label:'HTML 文档' },
+  pdf:{ label:'PDF 文档' }
 };
 const DOC_EXT_KIND = {
   docx:'docx', docm:'docx', dotx:'docx', dotm:'docx', doc:'doc', dot:'doc',
@@ -6532,7 +6534,7 @@ const DOC_EXT_KIND = {
   pptx:'pptx', pptm:'pptx', potx:'pptx', potm:'pptx', ppsx:'pptx', ppsm:'pptx',
   ppt:'ppt', pot:'ppt', pps:'ppt',
   odt:'odt', ott:'odt', ods:'ods', ots:'ods', odp:'odp', otp:'odp', odg:'odg', otg:'odg',
-  rtf:'rtf', epub:'epub'
+  rtf:'rtf', epub:'epub', pdf:'pdf'
 };
 function docKindFromName(name){
   const m = String(name || '').match(/\.([A-Za-z0-9]+)$/);
@@ -6542,7 +6544,7 @@ function docKindLabel(kind){
   return (DOC_KIND_META[kind] && DOC_KIND_META[kind].label) || '文档';
 }
 function docSupportedHint(){
-  return '支持 doc/docx/docm、xls/xlsx/xlsm、ppt/pptx/pptm、odt/ods/odp、rtf、epub 等文档';
+  return '支持 doc/docx/docm、xls/xlsx/xlsm、ppt/pptx/pptm、pdf、odt/ods/odp、rtf、epub 等文档';
 }
 
 /* ---------- 字节读取 ---------- */
@@ -8643,6 +8645,1280 @@ function scanReadableText(bytes, limit){
 }
 
 /* ============================================================
+ * PDF 读取（全部在本机完成，不调用付费服务）
+ *   - 解析 PDF 对象（含对象流 / Flate 压缩 / 常见过滤器）
+ *   - 按页提取文字层：Tj/TJ/Td/Tm/T* 等文本操作符
+ *   - 字体解码：ToUnicode CMap、WinAnsi/Standard/MacRoman、
+ *     Differences、Type0(Identity-H) 等
+ *   - 扫描件兜底：提取页面里的整页图片（JPEG / Flate 位图），
+ *     交给现有的图片附件流程，由用户确认后再发给模型
+ * ============================================================ */
+const PDF_TEXT_PER_PAGE_MIN = 24;       // 平均每页少于该字数时，视为可能没有文字层
+const PDF_MAX_PAGES = 300;
+const PDF_SCAN_MAX_IMAGES = 6;
+const PDF_STREAM_LIMIT = DOC_ENTRY_MAX_BYTES;
+
+const PDF_WS = (function(){
+  const a = new Uint8Array(256);
+  [0, 9, 10, 12, 13, 32].forEach(function(c){ a[c] = 1; });
+  return a;
+})();
+const PDF_DELIM = (function(){
+  const a = new Uint8Array(256);
+  [40, 41, 60, 62, 91, 93, 123, 125, 47, 37].forEach(function(c){ a[c] = 1; });
+  return a;
+})();
+function pdfIsWhite(b){ return b < 256 ? PDF_WS[b] === 1 : false; }
+function pdfIsDelim(b){ return b < 256 ? PDF_DELIM[b] === 1 : false; }
+function pdfFindSeq(bytes, seq, from){
+  let i = from || 0;
+  while(i <= bytes.length - seq.length){
+    const at = bytes.indexOf(seq[0], i);
+    if(at < 0) return -1;
+    let ok = true;
+    for(let k = 1; k < seq.length; k++){
+      if(bytes[at + k] !== seq[k]){ ok = false; break; }
+    }
+    if(ok) return at;
+    i = at + 1;
+  }
+  return -1;
+}
+const PDF_ENDSTREAM = [101, 110, 100, 115, 116, 114, 101, 97, 109];
+
+/* ---------- 词法分析 ---------- */
+class PdfLexer {
+  constructor(bytes, pos){
+    this.b = bytes;
+    this.p = pos || 0;
+  }
+  skip(){
+    const b = this.b;
+    while(this.p < b.length){
+      const c = b[this.p];
+      if(c === 37){
+        while(this.p < b.length && b[this.p] !== 10 && b[this.p] !== 13) this.p++;
+      }else if(pdfIsWhite(c)){
+        this.p++;
+      }else{
+        break;
+      }
+    }
+  }
+  readName(){
+    this.skip();
+    if(this.b[this.p] !== 47) return '';
+    this.p++;
+    let s = '';
+    while(this.p < this.b.length){
+      const c = this.b[this.p];
+      if(pdfIsWhite(c) || pdfIsDelim(c)) break;
+      if(c === 35 && this.p + 2 < this.b.length){
+        const hex = bytesToLatin1(this.b.subarray(this.p + 1, this.p + 3));
+        const v = parseInt(hex, 16);
+        if(!isNaN(v)){
+          s += String.fromCharCode(v);
+          this.p += 3;
+          continue;
+        }
+      }
+      s += String.fromCharCode(c);
+      this.p++;
+    }
+    return s;
+  }
+  readWord(){
+    this.skip();
+    const start = this.p;
+    while(this.p < this.b.length && !pdfIsWhite(this.b[this.p]) && !pdfIsDelim(this.b[this.p])) this.p++;
+    return bytesToLatin1(this.b.subarray(start, this.p));
+  }
+  readNumber(){
+    this.skip();
+    const start = this.p;
+    const b = this.b;
+    if(b[this.p] === 43 || b[this.p] === 45) this.p++;
+    let digits = false;
+    while(this.p < b.length && b[this.p] >= 48 && b[this.p] <= 57){ this.p++; digits = true; }
+    if(b[this.p] === 46){
+      this.p++;
+      while(this.p < b.length && b[this.p] >= 48 && b[this.p] <= 57){ this.p++; digits = true; }
+    }
+    if(!digits){ this.p = start; return null; }
+    return parseFloat(bytesToLatin1(b.subarray(start, this.p)));
+  }
+  readUInt(){
+    this.skip();
+    const start = this.p;
+    while(this.p < this.b.length && this.b[this.p] >= 48 && this.b[this.p] <= 57) this.p++;
+    if(this.p === start) return null;
+    return parseInt(bytesToLatin1(this.b.subarray(start, this.p)), 10);
+  }
+  readLiteralString(){
+    const b = this.b;
+    this.skip();
+    if(b[this.p] !== 40) return new Uint8Array(0);
+    this.p++;
+    const out = [];
+    let depth = 1;
+    while(this.p < b.length && depth > 0){
+      const c = b[this.p++];
+      if(c === 92){
+        const n = b[this.p++];
+        if(n === 110) out.push(10);
+        else if(n === 114) out.push(13);
+        else if(n === 116) out.push(9);
+        else if(n === 98) out.push(8);
+        else if(n === 102) out.push(12);
+        else if(n === 40 || n === 41 || n === 92) out.push(n);
+        else if(n === 13){ if(b[this.p] === 10) this.p++; }
+        else if(n === 10){ /* 续行 */ }
+        else if(n >= 48 && n <= 55){
+          let v = n - 48;
+          for(let k = 0; k < 2 && this.p < b.length && b[this.p] >= 48 && b[this.p] <= 55; k++){
+            v = v * 8 + (b[this.p++] - 48);
+          }
+          out.push(v & 255);
+        }else if(n !== undefined){
+          out.push(n);
+        }
+      }else if(c === 40){
+        depth++;
+        out.push(c);
+      }else if(c === 41){
+        depth--;
+        if(depth > 0) out.push(c);
+      }else{
+        out.push(c);
+      }
+    }
+    return new Uint8Array(out);
+  }
+  readHexString(){
+    const b = this.b;
+    this.skip();
+    if(b[this.p] !== 60) return new Uint8Array(0);
+    this.p++;
+    const out = [];
+    let hi = -1;
+    while(this.p < b.length){
+      const c = b[this.p++];
+      if(c === 62) break;
+      let v = -1;
+      if(c >= 48 && c <= 57) v = c - 48;
+      else if(c >= 65 && c <= 70) v = c - 55;
+      else if(c >= 97 && c <= 102) v = c - 87;
+      if(v < 0) continue;
+      if(hi < 0) hi = v;
+      else { out.push((hi << 4) | v); hi = -1; }
+    }
+    if(hi >= 0) out.push(hi << 4);
+    return new Uint8Array(out);
+  }
+  readArray(){
+    const out = [];
+    this.skip();
+    if(this.b[this.p] !== 91) return out;
+    this.p++;
+    let guard = 0;
+    while(this.p < this.b.length && guard++ < 1000000){
+      this.skip();
+      if(this.b[this.p] === 93){ this.p++; break; }
+      const v = this.parseValue();
+      if(v === null && this.b[this.p] !== 93) { this.p++; continue; }
+      out.push(v);
+    }
+    return out;
+  }
+  readDict(){
+    const out = Object.create(null);
+    this.skip();
+    if(!(this.b[this.p] === 60 && this.b[this.p + 1] === 60)) return out;
+    this.p += 2;
+    let guard = 0;
+    while(this.p < this.b.length && guard++ < 2000000){
+      this.skip();
+      if(this.b[this.p] === 62 && this.b[this.p + 1] === 62){ this.p += 2; break; }
+      if(this.b[this.p] !== 47){ this.p++; continue; }
+      const key = this.readName();
+      const value = this.parseValue();
+      if(value === null && this.p >= this.b.length) break;
+      out[key] = value;
+    }
+    return out;
+  }
+  parseValue(){
+    this.skip();
+    const b = this.b;
+    if(this.p >= b.length) return null;
+    const c = b[this.p];
+    if(c === 47) return { n: this.readName() };
+    if(c === 40) return this.readLiteralString();
+    if(c === 60){
+      if(b[this.p + 1] === 60) return this.readDict();
+      return this.readHexString();
+    }
+    if(c === 91) return this.readArray();
+    if(c === 43 || c === 45 || c === 46 || (c >= 48 && c <= 57)){
+      const num = this.readNumber();
+      if(num === null) return null;
+      const afterNum = this.p;
+      const gen = this.readUInt();
+      if(gen !== null){
+        const afterGen = this.p;
+        this.skip();
+        if(b[this.p] === 82 && Number.isInteger(num) && Number.isInteger(gen) && gen >= 0 &&
+           (this.p + 1 >= b.length || pdfIsWhite(b[this.p + 1]) || pdfIsDelim(b[this.p + 1]))){
+          this.p++;
+          return { __ref: num, gen: gen };
+        }
+        this.p = afterGen;
+      }
+      this.p = afterNum;
+      return num;
+    }
+    const word = this.readWord();
+    if(word === 'true') return true;
+    if(word === 'false') return false;
+    if(word === 'null') return null;
+    return { __kw: word };
+  }
+}
+
+function pdfName(v){
+  return v && typeof v === 'object' && typeof v.n === 'string' ? v.n : '';
+}
+function pdfNum(v){
+  return typeof v === 'number' && isFinite(v) ? v : null;
+}
+function pdfResolve(objects, v){
+  let guard = 0;
+  while(v && typeof v === 'object' && v.__ref !== undefined && guard++ < 30){
+    const obj = objects.get(v.__ref);
+    if(!obj) return undefined;
+    v = obj.value;
+  }
+  return v;
+}
+function pdfResolveObj(objects, v){
+  if(v && typeof v === 'object' && v.__ref !== undefined) return objects.get(v.__ref) || null;
+  return null;
+}
+function pdfConcat(parts){
+  let total = 0;
+  for(const p of parts) total += p.length;
+  const out = new Uint8Array(total);
+  let pos = 0;
+  for(const p of parts){ out.set(p, pos); pos += p.length; }
+  return out;
+}
+function pdfUtf16be(bytes){
+  let s = '';
+  for(let i = 0; i + 1 < bytes.length; i += 2) s += String.fromCharCode((bytes[i] << 8) | bytes[i + 1]);
+  if(bytes.length % 2) s += String.fromCharCode(bytes[bytes.length - 1]);
+  return s;
+}
+function pdfDecodeByte1252(b){
+  try{ return new TextDecoder('windows-1252').decode(new Uint8Array([b])); }
+  catch(e){ return b >= 32 && b < 127 ? String.fromCharCode(b) : ''; }
+}
+
+/* ---------- 压缩 / 过滤器 ---------- */
+async function pdfInflate(data, limit){
+  limit = limit || PDF_STREAM_LIMIT;
+  if(typeof DecompressionStream === 'function' && typeof Blob === 'function' && typeof Response === 'function'){
+    try{
+      const stream = new Blob([data]).stream().pipeThrough(new DecompressionStream('deflate'));
+      const buf = await new Response(stream).arrayBuffer();
+      if(buf.byteLength > limit) throw new Error('PDF 解压后内容过大');
+      return new Uint8Array(buf);
+    }catch(e){
+      if(e && /过大/.test(String(e.message || ''))) throw e;
+      // 继续尝试内置 inflate
+    }
+  }
+  let start = 0;
+  if(data.length >= 2 && (data[0] & 0x0F) === 8 && (((data[0] << 8) | data[1]) % 31) === 0) start = 2;
+  try{
+    return inflateRawSync(data.subarray(start), limit);
+  }catch(e){
+    try{
+      return inflateRawSync(data, limit);
+    }catch(e2){
+      throw new Error('PDF 解压失败');
+    }
+  }
+}
+function pdfDecodeAsciiHex(data){
+  const out = [];
+  let hi = -1;
+  for(let i = 0; i < data.length; i++){
+    const c = data[i];
+    if(c === 62) break;
+    let v = -1;
+    if(c >= 48 && c <= 57) v = c - 48;
+    else if(c >= 65 && c <= 70) v = c - 55;
+    else if(c >= 97 && c <= 102) v = c - 87;
+    if(v < 0) continue;
+    if(hi < 0) hi = v;
+    else { out.push((hi << 4) | v); hi = -1; }
+  }
+  if(hi >= 0) out.push(hi << 4);
+  return new Uint8Array(out);
+}
+function pdfDecodeAscii85(data){
+  const out = [];
+  let group = [];
+  for(let i = 0; i < data.length; i++){
+    const c = data[i];
+    if(pdfIsWhite(c)) continue;
+    if(c === 126) break;
+    if(c === 122 && group.length === 0){ out.push(0, 0, 0, 0); continue; }
+    if(c < 33 || c > 117) continue;
+    group.push(c - 33);
+    if(group.length === 5){
+      let v = 0;
+      for(const g of group) v = v * 85 + g;
+      out.push((v >>> 24) & 255, (v >>> 16) & 255, (v >>> 8) & 255, v & 255);
+      group = [];
+    }
+  }
+  if(group.length){
+    const n = group.length;
+    while(group.length < 5) group.push(84);
+    let v = 0;
+    for(const g of group) v = v * 85 + g;
+    const bytes = [(v >>> 24) & 255, (v >>> 16) & 255, (v >>> 8) & 255, v & 255];
+    for(let i = 0; i < n - 1; i++) out.push(bytes[i]);
+  }
+  return new Uint8Array(out);
+}
+function pdfDecodeRunLength(data){
+  const out = [];
+  let i = 0;
+  while(i < data.length){
+    const n = data[i++];
+    if(n === 128) break;
+    if(n < 128){
+      for(let k = 0; k <= n && i < data.length; k++) out.push(data[i++]);
+    }else{
+      const b = data[i++];
+      for(let k = 0; k < 257 - n; k++) out.push(b);
+    }
+  }
+  return new Uint8Array(out);
+}
+function pdfApplyPredictor(data, parms){
+  if(!parms) return data;
+  const pred = pdfNum(parms.Predictor) || 1;
+  if(pred <= 1) return data;
+  const colors = Math.max(1, pdfNum(parms.Colors) || 1);
+  const bpc = Math.max(1, pdfNum(parms.BitsPerComponent) || 8);
+  const columns = Math.max(1, pdfNum(parms.Columns) || 1);
+  const bpp = Math.max(1, Math.ceil(colors * bpc / 8));
+  const rowLen = Math.ceil(columns * colors * bpc / 8);
+  if(pred === 2){
+    const rows = Math.floor(data.length / rowLen);
+    const out = new Uint8Array(rows * rowLen);
+    for(let r = 0; r < rows; r++){
+      const src = r * rowLen, dst = r * rowLen;
+      for(let i = 0; i < rowLen; i++){
+        const left = i >= bpp ? out[dst + i - bpp] : 0;
+        out[dst + i] = (data[src + i] + left) & 255;
+      }
+    }
+    return out;
+  }
+  if(pred >= 10){
+    const out = [];
+    let prev = new Uint8Array(rowLen);
+    let pos = 0;
+    while(pos < data.length){
+      const ft = data[pos++];
+      const row = new Uint8Array(rowLen);
+      const avail = Math.min(rowLen, data.length - pos);
+      row.set(data.subarray(pos, pos + avail));
+      pos += avail;
+      for(let i = 0; i < rowLen; i++){
+        const left = i >= bpp ? row[i - bpp] : 0;
+        const up = prev[i];
+        if(ft === 1) row[i] = (row[i] + left) & 255;
+        else if(ft === 2) row[i] = (row[i] + up) & 255;
+        else if(ft === 3) row[i] = (row[i] + ((left + up) >> 1)) & 255;
+        else if(ft === 4){
+          const ul = i >= bpp ? prev[i - bpp] : 0;
+          const p = left + up - ul;
+          const pa = Math.abs(p - left), pb = Math.abs(p - up), pc = Math.abs(p - ul);
+          const pr = (pa <= pb && pa <= pc) ? left : (pb <= pc ? up : ul);
+          row[i] = (row[i] + pr) & 255;
+        }
+      }
+      for(let i = 0; i < rowLen; i++) out.push(row[i]);
+      prev = row;
+    }
+    return new Uint8Array(out);
+  }
+  return data;
+}
+async function pdfDecodeStream(obj, objects){
+  if(!obj) return new Uint8Array(0);
+  if(obj.__decoded) return obj.__decoded;
+  let data = obj.stream || new Uint8Array(0);
+  const filterValue = pdfResolve(objects, obj.value && obj.value.Filter);
+  let filters = filterValue == null ? [] : (Array.isArray(filterValue) ? filterValue : [filterValue]);
+  const parmsValue = pdfResolve(objects, obj.value && obj.value.DecodeParms);
+  let parms = parmsValue;
+  for(let i = 0; i < filters.length; i++){
+    const name = pdfName(pdfResolve(objects, filters[i]));
+    let parm = Array.isArray(parms) ? pdfResolve(objects, parms[i]) : (i === 0 ? parms : null);
+    parm = parm || null;
+    if(name === 'FlateDecode'){
+      data = await pdfInflate(data);
+      data = pdfApplyPredictor(data, parm);
+    }else if(name === 'ASCIIHexDecode'){
+      data = pdfDecodeAsciiHex(data);
+    }else if(name === 'ASCII85Decode'){
+      data = pdfDecodeAscii85(data);
+    }else if(name === 'RunLengthDecode'){
+      data = pdfDecodeRunLength(data);
+    }else if(name === 'Crypt'){
+      /* 加密文件在入口处已拒绝；此处忽略 */
+    }else{
+      throw new Error('PDF 使用了暂不支持的压缩方式：' + (name || '未知'));
+    }
+  }
+  obj.__decoded = data;
+  return data;
+}
+
+/* ---------- 对象扫描 ---------- */
+function pdfScanObjects(bytes){
+  const objects = new Map();
+  let i = 0;
+  const len = bytes.length;
+  while(i < len - 8){
+    const at = pdfFindSeq(bytes, [111, 98, 106], i);
+    if(at < 0) break;
+    const after = bytes[at + 3];
+    if(after !== undefined && !pdfIsWhite(after) && !pdfIsDelim(after)){ i = at + 3; continue; }
+    let j = at - 1;
+    while(j >= 0 && pdfIsWhite(bytes[j])) j--;
+    const genEnd = j;
+    while(j >= 0 && bytes[j] >= 48 && bytes[j] <= 57) j--;
+    const genStart = j + 1;
+    if(genStart > genEnd){ i = at + 3; continue; }
+    let wsEnd = j;
+    while(j >= 0 && pdfIsWhite(bytes[j])) j--;
+    if(j === wsEnd && j >= 0){ i = at + 3; continue; }
+    const numEnd = j;
+    while(j >= 0 && bytes[j] >= 48 && bytes[j] <= 57) j--;
+    const numStart = j + 1;
+    if(numStart > numEnd){ i = at + 3; continue; }
+    const num = parseInt(bytesToLatin1(bytes.subarray(numStart, numEnd + 1)), 10);
+    const gen = parseInt(bytesToLatin1(bytes.subarray(genStart, genEnd + 1)), 10);
+    const lexer = new PdfLexer(bytes, at + 3);
+    let value;
+    try{ value = lexer.parseValue(); }catch(e){ i = at + 3; continue; }
+    if(!value || typeof value !== 'object' || value.__kw){ i = at + 3; continue; }
+    lexer.skip();
+    let stream = null;
+    let end = lexer.p;
+    if(lexer.p + 6 <= len && bytesToLatin1(bytes.subarray(lexer.p, lexer.p + 6)) === 'stream'){
+      let dataStart = lexer.p + 6;
+      if(bytes[dataStart] === 13) dataStart++;
+      if(bytes[dataStart] === 10) dataStart++;
+      let dataLen = -1;
+      const lv = value.Length;
+      if(typeof lv === 'number' && lv >= 0) dataLen = lv;
+      else if(lv && lv.__ref){
+        const target = objects.get(lv.__ref);
+        if(target && typeof target.value === 'number') dataLen = target.value;
+      }
+      let dataEnd = -1;
+      if(dataLen >= 0 && dataStart + dataLen <= len){
+        const candidate = dataStart + dataLen;
+        const es = pdfFindSeq(bytes, PDF_ENDSTREAM, candidate);
+        if(es >= 0 && es - candidate <= 24) dataEnd = candidate;
+      }
+      if(dataEnd < 0){
+        const es = pdfFindSeq(bytes, PDF_ENDSTREAM, dataStart);
+        dataEnd = es >= 0 ? es : len;
+      }
+      while(dataEnd > dataStart && (bytes[dataEnd - 1] === 10 || bytes[dataEnd - 1] === 13)) dataEnd--;
+      stream = bytes.subarray(dataStart, Math.max(dataStart, dataEnd));
+      end = dataEnd;
+      const afterStream = pdfFindSeq(bytes, PDF_ENDSTREAM, dataEnd);
+      if(afterStream >= 0) end = afterStream + PDF_ENDSTREAM.length;
+    }
+    objects.set(num, { num: num, gen: gen, value: value, stream: stream });
+    i = Math.max(end, at + 3);
+  }
+  return objects;
+}
+
+async function pdfExpandObjectStreams(objects){
+  const list = Array.from(objects.values());
+  for(const obj of list){
+    const type = pdfName(pdfResolve(objects, obj.value && obj.value.Type));
+    if(type !== 'ObjStm' || !obj.stream) continue;
+    let data;
+    try{ data = await pdfDecodeStream(obj, objects); }catch(e){ continue; }
+    const n = pdfNum(pdfResolve(objects, obj.value.N)) || 0;
+    const first = pdfNum(pdfResolve(objects, obj.value.First)) || 0;
+    if(n <= 0 || first < 0 || first > data.length) continue;
+    const header = new PdfLexer(data, 0);
+    const pairs = [];
+    for(let k = 0; k < n; k++){
+      const num = header.readUInt();
+      const off = header.readUInt();
+      if(num === null || off === null) break;
+      pairs.push([num, off]);
+    }
+    for(const pair of pairs){
+      const num = pair[0], off = pair[1];
+      if(objects.has(num)) continue;
+      try{
+        const lx = new PdfLexer(data, first + off);
+        const value = lx.parseValue();
+        if(value && typeof value === 'object' && !value.__kw){
+          objects.set(num, { num: num, gen: 0, value: value, stream: null });
+        }
+      }catch(e){ /* 单个对象损坏不影响其它 */ }
+    }
+  }
+}
+
+/* ---------- 字体 / ToUnicode ---------- */
+const PDF_GLYPH_ASCII = {
+  space:32, exclam:33, quotedbl:34, numbersign:35, dollar:36, percent:37, ampersand:38,
+  quotesingle:39, parenleft:40, parenright:41, asterisk:42, plus:43, comma:44, hyphen:45,
+  period:46, slash:47, zero:48, one:49, two:50, three:51, four:52, five:53, six:54,
+  seven:55, eight:56, nine:57, colon:58, semicolon:59, less:60, equal:61, greater:62,
+  question:63, at:64, bracketleft:91, backslash:92, bracketright:93, asciicircum:94,
+  underscore:95, grave:96, braceleft:123, bar:124, braceright:125, asciitilde:126
+};
+const PDF_GLYPH_SYMBOL = {
+  nbspace:160, exclamdown:161, cent:162, sterling:163, currency:164, yen:165, brokenbar:166,
+  section:167, dieresis:168, copyright:169, ordfeminine:170, guillemotleft:171,
+  logicalnot:172, sfthyphen:173, registered:174, macron:175, degree:176, plusminus:177,
+  twosuperior:178, threesuperior:179, acute:180, mu:181, paragraph:182, periodcentered:183,
+  cedilla:184, onesuperior:185, ordmasculine:186, guillemotright:187, onequarter:188,
+  onehalf:189, threequarters:190, questiondown:191, multiply:215, divide:247,
+  quoteleft:8216, quoteright:8217, quotedblleft:8220, quotedblright:8221,
+  bullet:8226, endash:8211, emdash:8212, ellipsis:8230, dagger:8224, daggerdbl:8225,
+  perthousand:8240, guilsinglleft:8249, guilsinglright:8250, quotedblbase:8222,
+  quotesinglbase:8218, florin:402, circumflex:710, tilde:732, breve:728, dotaccent:729,
+  ring:730, ogonek:731, hungarumlaut:733, caron:711, fi:64257, fl:64258,
+  Euro:8364, trademark:8482, arrowleft:8592, arrowup:8593, arrowright:8594, arrowdown:8595,
+  minute:8242, second:8243, lessequal:8804, greaterequal:8805, notequal:8800,
+  infinity:8734, summation:8721, product:8719, radical:8730, integral:8747,
+  approxequal:8776, Delta:916, Omega:937, pi:960, lozenge:9674
+};
+function pdfGlyphToUnicode(name){
+  if(!name) return '';
+  if(Object.prototype.hasOwnProperty.call(PDF_GLYPH_ASCII, name)) return String.fromCharCode(PDF_GLYPH_ASCII[name]);
+  if(name.length === 1) return name;
+  if(Object.prototype.hasOwnProperty.call(PDF_GLYPH_SYMBOL, name)) return String.fromCharCode(PDF_GLYPH_SYMBOL[name]);
+  let m = name.match(/^uni([0-9A-Fa-f]{4,6})$/);
+  if(m){
+    try{ return String.fromCodePoint(parseInt(m[1], 16)); }catch(e){ return ''; }
+  }
+  m = name.match(/^u([0-9A-Fa-f]{4,6})$/);
+  if(m){
+    try{ return String.fromCodePoint(parseInt(m[1], 16)); }catch(e){ return ''; }
+  }
+  return '';
+}
+function pdfFillBaseEncoding(arr, base){
+  const name = base || 'WinAnsiEncoding';
+  if(name === 'StandardEncoding'){
+    for(let c = 32; c <= 126; c++) arr[c] = String.fromCharCode(c);
+    arr[39] = String.fromCharCode(39);
+    arr[96] = String.fromCharCode(96);
+    return;
+  }
+  if(name === 'MacRomanEncoding'){
+    for(let c = 0; c < 256; c++){
+      try{ arr[c] = new TextDecoder('macintosh').decode(new Uint8Array([c])); }
+      catch(e){ arr[c] = c >= 32 && c < 127 ? String.fromCharCode(c) : ''; }
+    }
+    return;
+  }
+  for(let c = 0; c < 256; c++) arr[c] = pdfDecodeByte1252(c);
+}
+function pdfParseCMap(text){
+  const map = Object.create(null);
+  const lengths = new Set();
+  const tokens = [];
+  let i = 0;
+  while(i < text.length){
+    const ch = text.charAt(i);
+    if(/\s/.test(ch)){ i++; continue; }
+    if(ch === '%'){ while(i < text.length && text.charAt(i) !== '\n') i++; continue; }
+    if(ch === '>'){ i++; continue; }
+    if(ch === '<'){
+      if(text.charAt(i + 1) === '<'){ i += 2; continue; }
+      const e = text.indexOf('>', i + 1);
+      const hex = text.slice(i + 1, e < 0 ? text.length : e).replace(/[^0-9A-Fa-f]/g, '');
+      const bytes = new Uint8Array(Math.ceil(hex.length / 2));
+      for(let k = 0; k < bytes.length; k++) bytes[k] = parseInt(hex.substr(k * 2, 2), 16) || 0;
+      tokens.push({ h: bytes });
+      i = e < 0 ? text.length : e + 1;
+      continue;
+    }
+    if(ch === '[' || ch === ']'){ tokens.push({ ch: ch }); i++; continue; }
+    const start = i;
+    while(i < text.length && !/[\s<>\[\]]/.test(text.charAt(i))) i++;
+    if(i === start){ i++; continue; }
+    tokens.push({ w: text.slice(start, i) });
+  }
+  function codeOf(bytes){
+    let v = 0;
+    for(let k = 0; k < bytes.length; k++) v = v * 256 + bytes[k];
+    return v;
+  }
+  function addRange(lo, hi, destBytes){
+    const srcLen = lo.length;
+    lengths.add(srcLen);
+    const loCode = codeOf(lo);
+    const hiCode = codeOf(hi);
+    if(hiCode < loCode) return;
+    const count = Math.min(hiCode - loCode + 1, 65536);
+    const dest = destBytes.slice();
+    for(let k = 0; k < count; k++){
+      map[loCode + k] = pdfUtf16be(dest);
+      let idx = dest.length - 1;
+      while(idx >= 0){
+        dest[idx] = (dest[idx] + 1) & 255;
+        if(dest[idx] !== 0) break;
+        idx--;
+      }
+    }
+  }
+  let k = 0;
+  while(k < tokens.length){
+    const t = tokens[k++];
+    if(t.w === 'begincodespacerange'){
+      while(k < tokens.length && tokens[k].h){
+        lengths.add(tokens[k].h.length);
+        k++;
+        if(k < tokens.length && tokens[k].h) k++;
+      }
+    }else if(t.w === 'beginbfchar'){
+      while(k < tokens.length && tokens[k].h){
+        const src = tokens[k++].h;
+        const dst = tokens[k++];
+        if(!dst || !dst.h) break;
+        lengths.add(src.length);
+        map[codeOf(src)] = pdfUtf16be(dst.h);
+      }
+    }else if(t.w === 'beginbfrange'){
+      while(k < tokens.length && tokens[k].h){
+        const lo = tokens[k++].h;
+        const hi = tokens[k++];
+        if(!hi || !hi.h) break;
+        const dst = tokens[k++];
+        if(dst && dst.h){
+          addRange(lo, hi.h, dst.h);
+        }else if(dst && dst.ch === '['){
+          const list = [];
+          while(k < tokens.length && tokens[k].h){ list.push(tokens[k++].h); }
+          if(k < tokens.length && tokens[k].ch === ']') k++;
+          const srcLen = lo.length;
+          lengths.add(srcLen);
+          const loCode = codeOf(lo);
+          for(let n = 0; n < list.length; n++) map[loCode + n] = pdfUtf16be(list[n]);
+        }else{
+          break;
+        }
+      }
+    }
+  }
+  return { map: map, lengths: lengths };
+}
+function pdfDecodeCMap(data, cmap){
+  let out = '';
+  let i = 0;
+  let lens = [];
+  cmap.lengths.forEach(function(n){ if(n <= 4) lens.push(n); });
+  lens.sort(function(a, b){ return b - a; });
+  if(!lens.length) lens = [1];
+  while(i < data.length){
+    let matched = false;
+    for(const len of lens){
+      if(i + len > data.length) continue;
+      let code = 0;
+      for(let k = 0; k < len; k++) code = code * 256 + data[i + k];
+      if(cmap.map[code] !== undefined){
+        out += cmap.map[code];
+        i += len;
+        matched = true;
+        break;
+      }
+    }
+    if(!matched) i++;
+  }
+  return out;
+}
+async function pdfBuildFont(objects, font){
+  const subtype = pdfName(pdfResolve(objects, font.Subtype));
+  let cmap = null;
+  if(font.ToUnicode){
+    const tu = pdfResolveObj(objects, font.ToUnicode);
+    if(tu && tu.stream){
+      try{
+        const data = await pdfDecodeStream(tu, objects);
+        cmap = pdfParseCMap(bytesToUtf8(data));
+      }catch(e){ cmap = null; }
+    }
+  }
+  if(subtype === 'Type0'){
+    const encoding = pdfName(pdfResolve(objects, font.Encoding));
+    const isUcs2 = /UCS2|UTF16/i.test(encoding);
+    let legacy = '';
+    if(/GBK|GB-EUC|GBpc-EUC|GBT-EUC|GBK2K/i.test(encoding)) legacy = 'gbk';
+    else if(/B5|ETen|CNS-EUC/i.test(encoding)) legacy = 'big5';
+    else if(/KSC|UHC|KSCms/i.test(encoding)) legacy = 'euc-kr';
+    else if(/RKSJ|90ms|90msp/i.test(encoding)) legacy = 'shift_jis';
+    return {
+      type: 'type0',
+      decode: function(data){
+        if(cmap) return pdfDecodeCMap(data, cmap);
+        if(isUcs2) return pdfUtf16be(data);
+        if(legacy) return decodeWith(data, legacy);
+        return '';
+      }
+    };
+  }
+  const encValue = pdfResolve(objects, font.Encoding);
+  let base = 'WinAnsiEncoding';
+  let differences = null;
+  if(encValue && typeof encValue === 'object' && !encValue.__ref){
+    const be = pdfName(pdfResolve(objects, encValue.BaseEncoding));
+    if(be) base = be;
+    differences = pdfResolve(objects, encValue.Differences);
+  }else{
+    const en = pdfName(encValue);
+    if(en) base = en;
+  }
+  const byteMap = new Array(256);
+  if(cmap && cmap.lengths.has(1)){
+    for(let c = 0; c < 256; c++){
+      if(cmap.map[c] !== undefined) byteMap[c] = cmap.map[c];
+    }
+  }
+  const baseMap = new Array(256);
+  pdfFillBaseEncoding(baseMap, base);
+  for(let c = 0; c < 256; c++) if(byteMap[c] === undefined) byteMap[c] = baseMap[c];
+  if(Array.isArray(differences)){
+    let code = 0;
+    for(const item of differences){
+      const v = pdfResolve(objects, item);
+      if(typeof v === 'number'){ code = v; continue; }
+      const name = pdfName(v);
+      if(name){
+        const u = pdfGlyphToUnicode(name);
+        if(u) byteMap[code] = u;
+        code++;
+      }
+    }
+  }
+  if(cmap && !cmap.lengths.has(1)){
+    return {
+      type: 'simple',
+      decode: function(data){ return pdfDecodeCMap(data, cmap); }
+    };
+  }
+  return {
+    type: 'simple',
+    decode: function(data){
+      let out = '';
+      for(let i = 0; i < data.length; i++){
+        const v = byteMap[data[i]];
+        out += v == null ? pdfDecodeByte1252(data[i]) : v;
+      }
+      return out;
+    }
+  };
+}
+
+/* ---------- 内容流 ---------- */
+function pdfContentTokens(data){
+  const root = [];
+  let cur = root;
+  const stack = [];
+  let i = 0;
+  while(i < data.length){
+    const c = data[i];
+    if(pdfIsWhite(c)){ i++; continue; }
+    if(c === 37){ while(i < data.length && data[i] !== 10 && data[i] !== 13) i++; continue; }
+    if(c === 40){
+      const lx = new PdfLexer(data, i);
+      const s = lx.readLiteralString();
+      cur.push({ s: s });
+      i = lx.p;
+      continue;
+    }
+    if(c === 60){
+      if(data[i + 1] === 60){
+        const lx = new PdfLexer(data, i);
+        const d = lx.readDict();
+        cur.push({ d: d });
+        i = lx.p;
+        continue;
+      }
+      const lx = new PdfLexer(data, i);
+      const s = lx.readHexString();
+      cur.push({ s: s });
+      i = lx.p;
+      continue;
+    }
+    if(c === 91){
+      const arr = [];
+      stack.push(cur);
+      cur = arr;
+      i++;
+      continue;
+    }
+    if(c === 93){
+      const arr = cur;
+      cur = stack.length ? stack.pop() : root;
+      cur.push({ a: arr });
+      i++;
+      continue;
+    }
+    if(c === 47){
+      const lx = new PdfLexer(data, i);
+      cur.push({ n: lx.readName() });
+      i = lx.p;
+      continue;
+    }
+    if(c === 43 || c === 45 || c === 46 || (c >= 48 && c <= 57)){
+      const lx = new PdfLexer(data, i);
+      const n = lx.readNumber();
+      if(n === null){ i++; continue; }
+      cur.push(n);
+      i = lx.p;
+      continue;
+    }
+    const start = i;
+    while(i < data.length && !pdfIsWhite(data[i]) && !pdfIsDelim(data[i])) i++;
+    const word = bytesToLatin1(data.subarray(start, i));
+    if(!word){ i = start + 1; continue; }
+    if(word === 'BI'){
+      // 跳过内联图片的二进制数据
+      let idAt = pdfFindSeq(data, [73, 68], i);
+      if(idAt >= 0){
+        let dstart = idAt + 2;
+        if(data[dstart] === 13) dstart++;
+        if(data[dstart] === 10) dstart++;
+        let eiAt = pdfFindSeq(data, [69, 73], dstart);
+        while(eiAt >= 0 && eiAt + 2 < data.length && !pdfIsWhite(data[eiAt + 2]) && !pdfIsDelim(data[eiAt + 2])){
+          eiAt = pdfFindSeq(data, [69, 73], eiAt + 1);
+        }
+        i = eiAt >= 0 ? eiAt + 2 : data.length;
+      }
+      continue;
+    }
+    cur.push({ op: word });
+  }
+  return root;
+}
+function pdfApproxWidth(text, fontSize){
+  let w = 0;
+  for(const ch of text){
+    const cp = ch.codePointAt(0);
+    if(cp >= 0x2E80) w += 1;
+    else if(cp === 32) w += 0.28;
+    else w += 0.5;
+  }
+  return w * (fontSize || 12);
+}
+function pdfPageText(content, fonts, context){
+  const lines = [];
+  let line = '';
+  const forms = context && context.forms;
+  const depth = context && context.depth || 0;
+  const state = {
+    font: null, size: 12, leading: 0,
+    tm: [1, 0, 0, 1, 0, 0], tlm: [1, 0, 0, 1, 0, 0],
+    lastX: null, lastY: null
+  };
+  function flush(force){
+    const s = line.replace(/[ \t]+$/, '');
+    if(s) lines.push(s);
+    line = '';
+    state.lastX = null;
+    if(force) state.lastY = null;
+  }
+  function show(data){
+    if(!data || !data.length) return;
+    let text = state.font ? state.font.decode(data) : '';
+    if(!text) return;
+    text = text.replace(/\u0000/g, '').replace(/\r/g, '\n');
+    const x = state.tm[4], y = state.tm[5];
+    const size = state.size || 12;
+    if(state.lastY !== null){
+      const dy = Math.abs(y - state.lastY);
+      if(dy > Math.max(1.5, size * 0.35)){
+        flush(false);
+      }else if(state.lastX !== null && x - state.lastX > Math.max(2, size * 0.25) &&
+               line && !/[ \t]$/.test(line)){
+        line += ' ';
+      }else if(state.lastX !== null && x < state.lastX - size * 1.5 && line){
+        flush(false);
+      }
+    }
+    line += text;
+    const advance = pdfApproxWidth(text, size);
+    state.tm[4] = x + advance;
+    state.lastX = x + advance;
+    state.lastY = y;
+  }
+  function move(tx, ty, setLeading){
+    // 平移矩阵乘到当前行矩阵：new = T(tx,ty) * tlm
+    const t = state.tlm;
+    state.tlm = [t[0], t[1], t[2], t[3], t[0] * tx + t[2] * ty + t[4], t[1] * tx + t[3] * ty + t[5]];
+    state.tm = state.tlm.slice();
+    if(setLeading) state.leading = -ty;
+  }
+  const tokens = pdfContentTokens(content);
+  let operands = [];
+  for(const tok of tokens){
+    if(tok && tok.op !== undefined){
+      const op = tok.op;
+      try{
+        if(op === 'BT'){
+          state.tm = [1, 0, 0, 1, 0, 0];
+          state.tlm = [1, 0, 0, 1, 0, 0];
+        }else if(op === 'ET'){
+          /* 不在这里换行：同一行可能由多个 BT/ET 片段组成，位置变化时再换行 */
+        }else if(op === 'Tf'){
+          const name = operands[0] && operands[0].n;
+          const fs = operands[1];
+          if(name && fonts[name]) state.font = fonts[name];
+          if(typeof fs === 'number' && fs > 0) state.size = fs;
+        }else if(op === 'TL'){
+          if(typeof operands[0] === 'number') state.leading = operands[0];
+        }else if(op === 'Td' || op === 'TD'){
+          const tx = operands[0], ty = operands[1];
+          if(typeof tx === 'number' && typeof ty === 'number') move(tx, ty, op === 'TD');
+        }else if(op === 'Tm'){
+          if(operands.length >= 6 && operands.every(function(v){ return typeof v === 'number'; })){
+            state.tm = operands.slice(0, 6);
+            state.tlm = state.tm.slice();
+          }
+        }else if(op === 'T*'){
+          move(0, -state.leading, false);
+        }else if(op === 'Tj'){
+          if(operands[0] && operands[0].s) show(operands[0].s);
+        }else if(op === 'TJ'){
+          const arr = operands[0] && operands[0].a;
+          if(Array.isArray(arr)){
+            for(const item of arr){
+              if(typeof item === 'number'){
+                if(item < -80 && line && !/[ \t]$/.test(line)) line += ' ';
+              }else if(item && item.s){
+                show(item.s);
+              }
+            }
+          }
+        }else if(op === "'"){
+          move(0, -state.leading, false);
+          if(operands[0] && operands[0].s) show(operands[0].s);
+        }else if(op === '"'){
+          move(0, -state.leading, false);
+          if(operands[2] && operands[2].s) show(operands[2].s);
+        }else if(op === 'Do' && forms && context && depth < 5){
+          const name = operands[0] && operands[0].n;
+          if(name){
+            const xobj = pdfResolve(context.objects, context.resources && context.resources.XObject);
+            const obj = pdfResolveObj(context.objects, xobj && xobj[name]);
+            const form = obj && forms.get(obj);
+            if(form){
+              if(line) flush(false);
+              const sub = pdfPageText(form.content, form.fonts, {
+                objects:context.objects,
+                resources:form.resources,
+                forms:forms,
+                depth:depth + 1
+              });
+              for(const l of sub) lines.push(l);
+            }
+          }
+        }
+      }catch(e){ /* 单个操作符出错不影响整页 */ }
+      operands = [];
+    }else{
+      operands.push(tok);
+    }
+  }
+  if(line) flush(true);
+  return lines;
+}
+
+/* ---------- 页面 / 资源 ---------- */
+async function pdfPageContent(objects, page){
+  const raw = page.Contents;
+  const resolved = pdfResolve(objects, raw);
+  const list = Array.isArray(resolved) ? resolved : [raw];
+  const parts = [];
+  for(const item of list){
+    const obj = pdfResolveObj(objects, item);
+    if(obj && obj.stream){
+      try{ parts.push(await pdfDecodeStream(obj, objects)); }catch(e){ /* 单段内容失败不影响其它 */ }
+    }
+  }
+  return parts.length ? pdfConcat(parts) : new Uint8Array(0);
+}
+function pdfPageFonts(objects, resources){
+  const fontDict = pdfResolve(objects, resources && resources.Font);
+  const result = Object.create(null);
+  if(!fontDict || typeof fontDict !== 'object') return Promise.resolve(result);
+  const tasks = [];
+  for(const key in fontDict){
+    const fontObj = pdfResolve(objects, fontDict[key]);
+    if(fontObj && typeof fontObj === 'object'){
+      tasks.push(pdfBuildFont(objects, fontObj).then(function(f){ result[key] = f; }).catch(function(){}));
+    }
+  }
+  return Promise.all(tasks).then(function(){ return result; });
+}
+/* 有些 PDF 把整页文字放在 Form XObject 里（Do 操作符）。
+ * 先把被引用的 Form 内容解出来，正文提取时再展开。 */
+async function pdfCollectForms(objects, resources, map, depth){
+  if(!resources || depth > 4) return;
+  const xobj = pdfResolve(objects, resources.XObject);
+  if(!xobj || typeof xobj !== 'object') return;
+  for(const key in xobj){
+    const obj = pdfResolveObj(objects, xobj[key]);
+    if(!obj || !obj.value || map.has(obj)) continue;
+    const subtype = pdfName(pdfResolve(objects, obj.value.Subtype));
+    if(subtype !== 'Form') continue;
+    const res = pdfResolve(objects, obj.value.Resources) || resources;
+    let content = null;
+    try{ content = await pdfDecodeStream(obj, objects); }catch(e){ continue; }
+    const fonts = await pdfPageFonts(objects, res);
+    map.set(obj, { content:content, fonts:fonts, resources:res });
+    await pdfCollectForms(objects, res, map, depth + 1);
+  }
+}
+function pdfPageImageCandidates(objects, resources){
+  const out = [];
+  const visited = new Set();
+  function walkRes(res, depth){
+    if(!res || depth > 4) return;
+    const xobj = pdfResolve(objects, res.XObject);
+    if(!xobj || typeof xobj !== 'object') return;
+    for(const key in xobj){
+      const obj = pdfResolveObj(objects, xobj[key]);
+      if(!obj || !obj.value || visited.has(obj)) continue;
+      visited.add(obj);
+      const subtype = pdfName(pdfResolve(objects, obj.value.Subtype));
+      if(subtype === 'Image'){
+        const w = pdfNum(pdfResolve(objects, obj.value.Width)) || 0;
+        const h = pdfNum(pdfResolve(objects, obj.value.Height)) || 0;
+        if(w >= 300 && h >= 300) out.push({ obj: obj, width: w, height: h, area: w * h });
+      }else if(subtype === 'Form'){
+        walkRes(pdfResolve(objects, obj.value.Resources), depth + 1);
+      }
+    }
+  }
+  walkRes(resources, 0);
+  out.sort(function(a, b){ return b.area - a.area; });
+  return out;
+}
+async function pdfDecodePageImage(objects, obj){
+  const dict = obj.value || {};
+  const filtersValue = pdfResolve(objects, dict.Filter);
+  const filters = (Array.isArray(filtersValue) ? filtersValue : [filtersValue])
+    .map(function(f){ return pdfName(pdfResolve(objects, f)); })
+    .filter(Boolean);
+  const w = pdfNum(pdfResolve(objects, dict.Width)) || 0;
+  const h = pdfNum(pdfResolve(objects, dict.Height)) || 0;
+  if(!obj.stream || !w || !h) return null;
+  if(w * h > 25000000) return null;
+  if(filters.indexOf('DCTDecode') >= 0 && filters.length === 1){
+    if(obj.stream[0] === 0xFF && obj.stream[1] === 0xD8){
+      return { kind:'jpeg', bytes:obj.stream, width:w, height:h };
+    }
+    return null;
+  }
+  if(filters.indexOf('JPXDecode') >= 0 || filters.indexOf('JBIG2Decode') >= 0 || filters.indexOf('CCITTFaxDecode') >= 0) return null;
+  let data;
+  try{ data = await pdfDecodeStream(obj, objects); }catch(e){ return null; }
+  let channels = 0;
+  const csValue = pdfResolve(objects, dict.ColorSpace);
+  const csName = pdfName(csValue);
+  if(csName === 'DeviceGray' || csName === 'CalGray') channels = 1;
+  else if(csName === 'DeviceRGB' || csName === 'CalRGB') channels = 3;
+  else if(csName === 'DeviceCMYK') channels = 4;
+  else if(Array.isArray(csValue)){
+    const family = pdfName(pdfResolve(objects, csValue[0]));
+    if(family === 'ICCBased'){
+      const csObj = pdfResolveObj(objects, csValue[1]);
+      channels = pdfNum(pdfResolve(objects, csObj && csObj.value && csObj.value.N)) || 0;
+    }else if(family === 'CalGray'){
+      channels = 1;
+    }else if(family === 'CalRGB'){
+      channels = 3;
+    }
+  }
+  if(!channels) return null;
+  const bpc = pdfNum(pdfResolve(objects, dict.BitsPerComponent)) || 8;
+  if(bpc !== 8 && bpc !== 1) return null;
+  const decode = pdfResolve(objects, dict.Decode);
+  let invert = false;
+  if(Array.isArray(decode) && decode.length >= 2 && decode[0] === 1 && decode[1] === 0) invert = true;
+  const rgba = new Uint8Array(w * h * 4);
+  let rowBytes, rowPad = 0;
+  if(bpc === 8){
+    rowBytes = w * channels;
+  }else{
+    rowBytes = Math.ceil(w * channels / 8);
+  }
+  rowPad = (bpc === 1) ? 0 : 0;
+  for(let y = 0; y < h; y++){
+    const rowStart = y * rowBytes;
+    for(let x = 0; x < w; x++){
+      const o = (y * w + x) * 4;
+      let r = 0, g = 0, b = 0;
+      if(bpc === 8){
+        const p = rowStart + x * channels;
+        if(channels === 1){ r = g = b = data[p] || 0; }
+        else if(channels === 3){ r = data[p] || 0; g = data[p + 1] || 0; b = data[p + 2] || 0; }
+        else if(channels === 4){
+          const c = data[p] || 0, m = data[p + 1] || 0, ye = data[p + 2] || 0, k = data[p + 3] || 0;
+          r = Math.round(255 * (1 - c / 255) * (1 - k / 255));
+          g = Math.round(255 * (1 - m / 255) * (1 - k / 255));
+          b = Math.round(255 * (1 - ye / 255) * (1 - k / 255));
+        }
+      }else{
+        const bit = x * channels;
+        const byte = data[rowStart + (bit >> 3)] || 0;
+        const v = (byte >> (7 - (bit & 7))) & 1;
+        r = g = b = v ? 255 : 0;
+      }
+      if(invert){ r = 255 - r; g = 255 - g; b = 255 - b; }
+      rgba[o] = r; rgba[o + 1] = g; rgba[o + 2] = b; rgba[o + 3] = 255;
+    }
+  }
+  return { kind:'raw', width:w, height:h, channels:channels, rgba:rgba };
+}
+
+/* ---------- PDF 总入口 ---------- */
+function pdfIsEncrypted(objects){
+  for(const obj of objects.values()){
+    const v = obj.value;
+    if(!v || typeof v !== 'object') continue;
+    if(v.Encrypt) return true;
+    if(pdfName(pdfResolve(objects, v.Filter)) === 'Standard' && pdfNum(pdfResolve(objects, v.V)) !== null && v.R !== undefined) return true;
+  }
+  return false;
+}
+async function extractPdfDocument(bytes){
+  let objects = pdfScanObjects(bytes);
+  await pdfExpandObjectStreams(objects);
+  if(pdfIsEncrypted(objects)) throw new Error('该 PDF 已加密（设置了打开密码），请取消密码后重新上传');
+  let catalog = null;
+  for(const obj of objects.values()){
+    if(pdfName(pdfResolve(objects, obj.value && obj.value.Type)) === 'Catalog') catalog = obj;
+  }
+  const pages = [];
+  const visited = new Set();
+  function walkPages(ref, inheritedRes){
+    const node = pdfResolve(objects, ref);
+    if(!node || typeof node !== 'object') return;
+    const refNum = ref && ref.__ref;
+    if(refNum !== undefined){
+      if(visited.has(refNum)) return;
+      visited.add(refNum);
+    }
+    const type = pdfName(node.Type);
+    const res = node.Resources !== undefined ? node.Resources : inheritedRes;
+    if(type === 'Pages' || Array.isArray(node.Kids)){
+      const kids = pdfResolve(objects, node.Kids);
+      if(Array.isArray(kids)) for(const kid of kids) walkPages(kid, res);
+    }else if(type === 'Page' || node.MediaBox || node.Contents){
+      pages.push({ dict: node, resources: pdfResolve(objects, res) || {} });
+    }
+  }
+  if(catalog && catalog.value){
+    walkPages(catalog.value.Pages, null);
+  }
+  if(!pages.length){
+    const list = Array.from(objects.values()).filter(function(o){
+      return pdfName(pdfResolve(objects, o.value && o.value.Type)) === 'Page';
+    }).sort(function(a, b){ return a.num - b.num; });
+    for(const o of list) pages.push({ dict: o.value, resources: pdfResolve(objects, o.value.Resources) || {} });
+  }
+  if(!pages.length) throw new Error('无法从 PDF 中解析出页面（文件可能已损坏或被加密）');
+  const sink = makeSink();
+  const imageCandidates = [];
+  let textChars = 0;
+  const total = Math.min(pages.length, PDF_MAX_PAGES);
+  for(let i = 0; i < total && !sink.stopped; i++){
+    const page = pages[i];
+    const fonts = await pdfPageFonts(objects, page.resources);
+    const forms = new Map();
+    await pdfCollectForms(objects, page.resources, forms, 0);
+    const content = await pdfPageContent(objects, page.dict);
+    let lines = [];
+    try{
+      lines = pdfPageText(content, fonts, { objects:objects, resources:page.resources, forms:forms, depth:0 });
+    }catch(e){ lines = []; }
+    let pageText = lines.join('\n').replace(/[ \t]+$/gm, '').trim();
+    textChars += pageText.replace(/\s/g, '').length;
+    sink.add('【第 ' + (i + 1) + ' 页】', true);
+    if(pageText){
+      pageText.split('\n').forEach(function(l){ sink.add(l); });
+    }
+    sink.add('', true);
+    const candidates = pdfPageImageCandidates(objects, page.resources);
+    if(candidates.length) imageCandidates.push({ page: i + 1, candidates: candidates });
+  }
+  const text = sink.join();
+  const perPage = textChars / Math.max(1, total);
+  const needsScanImages = perPage < PDF_TEXT_PER_PAGE_MIN;
+  let scanImages = [];
+  if(needsScanImages){
+    for(const entry of imageCandidates){
+      if(scanImages.length >= PDF_SCAN_MAX_IMAGES) break;
+      const images = await pdfDecodePageImage(objects, entry.candidates[0].obj);
+      if(images){
+        images.page = entry.page;
+        images.name = 'pdf-page-' + entry.page;
+        scanImages.push(images);
+      }
+    }
+  }
+  if(textChars === 0 && !scanImages.length){
+    // 没有任何文字层，页面图片又是 CCITT/JBIG2 等本地不支持的格式：
+    // 返回 needsRender，让上层询问是否联网用 pdf.js 渲染页面。
+    return {
+      text: '',
+      chars: 0,
+      pages: total,
+      textChars: 0,
+      needsScanImages: false,
+      scanImages: [],
+      needsRender: true,
+      detail: total + ' 页 · 需要渲染页面'
+    };
+  }
+  return {
+    text: text,
+    chars: text.length,
+    pages: total,
+    textChars: textChars,
+    needsScanImages: needsScanImages && scanImages.length > 0,
+    scanImages: scanImages,
+    needsRender: false,
+    detail: (needsScanImages && scanImages.length ? '扫描版 · ' : '') + total + ' 页' + (text.trim() ? ' · 约 ' + textChars.toLocaleString() + ' 字' : '')
+  };
+}
+
+/* ============================================================
  * 统一入口
  * ============================================================ */
 function docMagic(bytes){
@@ -8650,10 +9926,9 @@ function docMagic(bytes){
      (bytes[2] === 0x03 || bytes[2] === 0x05) && (bytes[3] === 0x04 || bytes[3] === 0x06)) return 'zip';
   if(bytes.length >= 8 && bytes[0] === 0xD0 && bytes[1] === 0xCF && bytes[2] === 0x11 && bytes[3] === 0xE0 &&
      bytes[4] === 0xA1 && bytes[5] === 0xB1 && bytes[6] === 0x1A && bytes[7] === 0xE1) return 'ole';
-  if(bytes.length >= 5){
-    const head = bytesToLatin1(bytes.subarray(0, Math.min(bytes.length, 32))).replace(/^\uFEFF/, '').trim();
-    if(head.indexOf('{\\rtf') === 0) return 'rtf';
-  }
+  const head = bytesToLatin1(bytes.subarray(0, Math.min(bytes.length, 1024)));
+  if(head.indexOf('%PDF-') >= 0) return 'pdf';
+  if(head.replace(/^\uFEFF/, '').trim().indexOf('{\\rtf') === 0) return 'rtf';
   return '';
 }
 function odfKindFromMime(mime){
@@ -8674,8 +9949,15 @@ async function extractDocumentText(file){
   let sink = null;
   let detail = '';
   let label = '';
+  let pdfResult = null;
 
-  if(magic === 'rtf'){
+  if(magic === 'pdf'){
+    kind = 'pdf';
+    pdfResult = await extractPdfDocument(bytes);
+    sink = makeSink();
+    sink.addBlock(pdfResult.text);
+    detail = pdfResult.detail;
+  }else if(magic === 'rtf'){
     const text = rtfToText(bytes);
     sink = makeSink();
     sink.addBlock(text);
@@ -8756,7 +10038,9 @@ async function extractDocumentText(file){
 
   if(!sink) throw new Error('解析失败');
   const text = sink.join();
-  if(!text.trim()) throw new Error('没有从文件中提取到文字内容（可能只有图片）');
+  const scanImages = kind === 'pdf' && pdfResult && pdfResult.needsScanImages ? pdfResult.scanImages : [];
+  const needsRender = !!(kind === 'pdf' && pdfResult && pdfResult.needsRender);
+  if(!text.trim() && !scanImages.length && !needsRender) throw new Error('没有从文件中提取到文字内容（可能只有图片）');
   if(!detail) detail = '约 ' + text.length.toLocaleString() + ' 字';
   const meta = DOC_KIND_META[kind] || { label:'文档' };
   return {
@@ -8764,7 +10048,11 @@ async function extractDocumentText(file){
     label:label || meta.label,
     detail:detail,
     text:text,
-    chars:text.length
+    chars:text.length,
+    needsScanImages: scanImages.length > 0,
+    scanImages: scanImages,
+    needsRender: needsRender,
+    pages: pdfResult ? pdfResult.pages : 0
   };
 }
 /* ===== [DOC-EXTRACT] END ===== */
@@ -8800,7 +10088,7 @@ async function addDocumentFiles(files, target){
     const name = f.name || 'file.txt';
     const docKind = docKindFromName(name);
     if(!docKind && FILE_BINARY_EXT.test(name)){
-      toast('暂不支持：' + name + '（' + docSupportedHint() + '；PDF、压缩包等暂不支持）');
+      toast('暂不支持：' + name + '（' + docSupportedHint() + '；压缩包等暂不支持）');
       continue;
     }
     const showProgress = !!docKind && !state.sending;
@@ -8808,8 +10096,56 @@ async function addDocumentFiles(files, target){
     try{
       let text = '';
       let doc = null;
+      let scanMode = false;
       if(docKind){
         doc = await extractDocumentText(f);
+        if(doc.needsRender){
+          const n = Math.min(doc.pages || IMG_MAX_COUNT, IMG_MAX_COUNT);
+          const ok = await askModal({
+            title:'PDF 页面渲染',
+            desc:'这个 PDF 没有可提取的文字层，页面图片又是本地暂不支持的压缩格式（常见于 CCITT / JBIG2 扫描件）。'
+              + '可以联网加载免费开源的 pdf.js（约 1MB，只用它把前 ' + n + ' 页渲染成图片），PDF 本身不会上传到任何服务器。'
+              + '渲染不收费，但模型看图会额外消耗图片 token。是否继续？',
+            okText:'联网渲染',
+            cancelText:'不渲染'
+          });
+          if(ok !== true){ toast('已取消：' + name); continue; }
+          const imgDest = isEdit ? state.editImages : state.pendingImages;
+          const added = await addPdfRenderedImages(f, imgDest, name, n);
+          if(!added){ toast(name + '：页面渲染失败，可改用截图上传'); continue; }
+          scanMode = true;
+          doc = {
+            kind:'pdf',
+            label:'PDF 扫描件',
+            detail: doc.pages + ' 页 · 图片模式',
+            text:'（扫描版 PDF，共 ' + doc.pages + ' 页；已联网渲染并发送 ' + added + ' 张页面图片，请直接阅读图片中的文字。）',
+            chars:0,
+            pages:doc.pages
+          };
+        }else if(doc.needsScanImages){
+          const n = Math.min(doc.scanImages.length, IMG_MAX_COUNT);
+          const ok = await askModal({
+            title:'扫描版 PDF',
+            desc:'这份 PDF 没有可提取的文字层（可能是扫描件），检测到 ' + doc.pages + ' 页整页图片。'
+              + '是否把前 ' + n + ' 页图片随消息发送，让模型直接看图？'
+              + '图片只在本机处理，不会上传到第三方服务；但模型看图会额外消耗图片 token。',
+            okText:'发送页面图片',
+            cancelText:'不发送'
+          });
+          if(ok !== true){ toast('已取消：' + name); continue; }
+          const imgDest = isEdit ? state.editImages : state.pendingImages;
+          const added = await addPdfScanImages(doc.scanImages, imgDest, name);
+          if(!added){ toast(name + '：页面图片提取失败，可改用截图上传'); continue; }
+          scanMode = true;
+          doc = {
+            kind:'pdf',
+            label:'PDF 扫描件',
+            detail: doc.pages + ' 页 · 图片模式',
+            text:'（扫描版 PDF，共 ' + doc.pages + ' 页；没有文字层，已改为发送 ' + added + ' 张页面图片，请直接阅读图片中的文字。）',
+            chars:0,
+            pages:doc.pages
+          };
+        }
         text = doc.text;
       }else{
         text = await readTextFile(f);
@@ -8839,7 +10175,9 @@ async function addDocumentFiles(files, target){
         originalChars:originalChars,
         docKind:doc ? doc.kind : '',
         docLabel:doc ? doc.label : '',
-        detail:doc ? doc.detail : ''
+        detail:doc ? doc.detail : '',
+        scanMode:scanMode,
+        pages:doc && doc.pages ? doc.pages : 0
       });
       if(isEdit) renderEditAttach(); else renderAttachStrip();
       if(doc) toast(name + ' 已读取：' + doc.detail);
@@ -8874,6 +10212,9 @@ function buildFilePrompt(files){
     }
     const fence = '`'.repeat(Math.max(3, maxBacktickRun(a.text) + 1));
     const note = a.truncated ? '（内容已截断，仅保留前 ' + a.text.length + ' 字）' : '';
+    if(a.scanMode){
+      return '【文件：' + name + '】（扫描版 PDF，共 ' + (a.pages || '?') + ' 页；没有文字层，页面图片已随消息发送）';
+    }
     if(a.docKind || a.docLabel){
       const bits = [a.docLabel || '文档'];
       if(a.detail) bits.push(a.detail);
@@ -8974,6 +10315,156 @@ async function addImageFiles(files, target){
       toast((f.name || '图片') + ' 处理失败：' + (err && err.message ? err.message : err));
     }
   }
+}
+/* 把 PDF 里提取出来的扫描页转成普通图片附件（本地处理） */
+function pdfScanImageToFile(im, name){
+  return new Promise((resolve, reject)=>{
+    try{
+      const w = im.width, h = im.height;
+      const canvas = document.createElement('canvas');
+      canvas.width = w;
+      canvas.height = h;
+      const ctx = canvas.getContext('2d');
+      if(!ctx) return reject(new Error('浏览器不支持图片处理'));
+      ctx.putImageData(new ImageData(new Uint8ClampedArray(im.rgba), w, h), 0, 0);
+      let target = canvas;
+      const scale = Math.min(1, IMG_MAX_DIM / Math.max(w, h));
+      if(scale < 1){
+        target = document.createElement('canvas');
+        target.width = Math.max(1, Math.round(w * scale));
+        target.height = Math.max(1, Math.round(h * scale));
+        const ctx2 = target.getContext('2d');
+        if(!ctx2) return reject(new Error('浏览器不支持图片处理'));
+        ctx2.fillStyle = '#ffffff';
+        ctx2.fillRect(0, 0, target.width, target.height);
+        ctx2.drawImage(canvas, 0, 0, target.width, target.height);
+      }
+      target.toBlob(function(blob){
+        if(!blob) reject(new Error('图片编码失败'));
+        else resolve(new File([blob], name, { type:'image/jpeg' }));
+      }, 'image/jpeg', IMG_QUALITY);
+    }catch(err){
+      reject(err);
+    }
+  });
+}
+async function addPdfScanImages(scanImages, dest, baseName){
+  const before = dest.length;
+  const files = [];
+  const base = String(baseName || 'PDF').replace(/\.[^.]+$/, '');
+  for(const im of (scanImages || [])){
+    const page = im.page || (files.length + 1);
+    const name = base + '-第' + page + '页.jpg';
+    try{
+      if(im.kind === 'jpeg'){
+        files.push(new File([im.bytes], name, { type:'image/jpeg' }));
+      }else if(im.kind === 'raw'){
+        files.push(await pdfScanImageToFile(im, name));
+      }
+    }catch(err){ /* 单页失败就跳过 */ }
+  }
+  if(files.length) await addImageFiles(files, dest);
+  return dest.length - before;
+}
+/* 极端扫描件（CCITT / JBIG2 等本地解不开）才联网加载免费开源的 pdf.js 渲染页面。
+ * PDF 文件本身不会上传，只是下载渲染代码；渲染不收费，只有模型看图会消耗 token。 */
+let pdfJsLoadPromise = null;
+function loadPdfJs(){
+  if(window.pdfjsLib) return Promise.resolve(window.pdfjsLib);
+  if(pdfJsLoadPromise) return pdfJsLoadPromise;
+  pdfJsLoadPromise = new Promise((resolve, reject)=>{
+    const base = 'https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/legacy/build/';
+    let done = false;
+    const timer = setTimeout(function(){
+      if(!done){ done = true; reject(new Error('联网加载 pdf.js 超时')); }
+    }, 30000);
+    const script = document.createElement('script');
+    script.src = base + 'pdf.min.js';
+    script.onload = async function(){
+      if(done) return;
+      if(!window.pdfjsLib){
+        done = true;
+        clearTimeout(timer);
+        reject(new Error('pdf.js 初始化失败'));
+        return;
+      }
+      try{
+        // 直接把 CDN 地址交给 Worker 在 file:// 页面会被同源策略挡住；
+        // 取回 worker 代码后作为普通脚本执行，pdf.js 会改用主线程 fake worker，
+        // 这样既不需要新建 Worker，也不会产生跨域报错。
+        const workerUrl = base + 'pdf.worker.min.js';
+        const code = await fetch(workerUrl).then(function(r){
+          if(!r.ok) throw new Error('HTTP ' + r.status);
+          return r.text();
+        });
+        if(done) return;
+        const blobUrl = URL.createObjectURL(new Blob([code], { type:'application/javascript' }));
+        await new Promise(function(resolveWorker, rejectWorker){
+          const ws = document.createElement('script');
+          ws.src = blobUrl;
+          ws.onload = resolveWorker;
+          ws.onerror = function(){ rejectWorker(new Error('worker 脚本加载失败')); };
+          document.head.appendChild(ws);
+        });
+        if(done) return;
+        window.pdfjsLib.GlobalWorkerOptions.workerSrc = blobUrl;
+        done = true;
+        clearTimeout(timer);
+        resolve(window.pdfjsLib);
+      }catch(err){
+        if(done) return;
+        done = true;
+        clearTimeout(timer);
+        reject(new Error('无法加载 pdf.js 渲染组件'));
+      }
+    };
+    script.onerror = function(){
+      if(done) return;
+      done = true;
+      clearTimeout(timer);
+      reject(new Error('无法联网加载 pdf.js'));
+    };
+    document.head.appendChild(script);
+  }).catch(function(err){
+    pdfJsLoadPromise = null;
+    throw err;
+  });
+  return pdfJsLoadPromise;
+}
+async function addPdfRenderedImages(file, dest, baseName, maxPages){
+  const before = dest.length;
+  let doc = null;
+  try{
+    const lib = await loadPdfJs();
+    const data = new Uint8Array(await file.arrayBuffer());
+    doc = await lib.getDocument({ data:data, isEvalSupported:false }).promise;
+    const count = Math.min(maxPages || IMG_MAX_COUNT, doc.numPages || 0);
+    if(!count) throw new Error('PDF 没有页面');
+    const files = [];
+    const base = String(baseName || 'PDF').replace(/\.[^.]+$/, '');
+    for(let i = 1; i <= count; i++){
+      const page = await doc.getPage(i);
+      const raw = page.getViewport({ scale:1 });
+      const scale = Math.min(2, IMG_MAX_DIM / Math.max(raw.width, raw.height));
+      const viewport = page.getViewport({ scale:scale });
+      const canvas = document.createElement('canvas');
+      canvas.width = Math.max(1, Math.ceil(viewport.width));
+      canvas.height = Math.max(1, Math.ceil(viewport.height));
+      const ctx = canvas.getContext('2d');
+      if(!ctx) throw new Error('浏览器不支持画布');
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      await page.render({ canvasContext:ctx, viewport:viewport, background:'#ffffff' }).promise;
+      const blob = await new Promise(function(resolve){ canvas.toBlob(resolve, 'image/jpeg', IMG_QUALITY); });
+      if(blob) files.push(new File([blob], base + '-第' + i + '页.jpg', { type:'image/jpeg' }));
+    }
+    if(files.length) await addImageFiles(files, dest);
+  }catch(err){
+    toast('PDF 页面渲染失败：' + (err && err.message ? err.message : err));
+  }finally{
+    if(doc && doc.destroy){ try{ await doc.destroy(); }catch(e){} }
+  }
+  return dest.length - before;
 }
 function attachFileItemHtml(f, i, rmAct){
   const name = f.name || 'file.txt';
